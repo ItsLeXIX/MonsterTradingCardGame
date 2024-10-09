@@ -15,7 +15,6 @@ public class Main {
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to start the server", e);
         }
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 server.stop();

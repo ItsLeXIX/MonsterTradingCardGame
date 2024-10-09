@@ -23,7 +23,6 @@ public class HttpServer {
     public void start() throws IOException {
         serverSocket = new ServerSocket(port);
         logger.info("Server started on port " + port);
-
         while (running) {
             try {
                 Socket clientSocket = serverSocket.accept();
@@ -57,7 +56,6 @@ public class HttpServer {
         }
     }
 
-    // Helper method to send error responses
     private void sendErrorResponse(PrintWriter out, int statusCode, String message) {
         out.println("HTTP/1.1 " + statusCode + " " + getHttpStatusMessage(statusCode));
         out.println("Content-Type: application/json");
@@ -66,7 +64,6 @@ public class HttpServer {
         out.flush();
     }
 
-    // Map status codes to messages
     private String getHttpStatusMessage(int statusCode) {
         switch (statusCode) {
             case 400: return "Bad Request";
@@ -87,7 +84,6 @@ public class HttpServer {
                 contentLength = Integer.parseInt(line.split(":")[1].trim());
             }
         }
-
         logger.info("Content-Length: " + contentLength);
         char[] buffer = new char[contentLength];
         int totalRead = 0, charsRead;
@@ -95,7 +91,6 @@ public class HttpServer {
             totalRead += charsRead;
         }
         requestBody.append(buffer);
-
         logger.info("Received Request Body: " + requestBody);
         return requestBody.toString();
     }
@@ -103,8 +98,8 @@ public class HttpServer {
     private void handleClient(Socket clientSocket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
             String requestLine = in.readLine();
+
             if (requestLine != null && !requestLine.isEmpty()) {
                 logger.info("Request: " + requestLine);
                 String[] parts = requestLine.split(" ");
@@ -167,20 +162,15 @@ public class HttpServer {
 
     private void handleLoginRequest(BufferedReader in, PrintWriter out) throws IOException {
         String requestBody = readRequestBody(in);
-
         ObjectMapper mapper = new ObjectMapper();
         try {
             Map<String, String> loginData = mapper.readValue(requestBody, new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
-
             String username = loginData.get("Username");
             String password = loginData.get("Password");
 
             if (UserStore.authenticateUser(username, password)) {
                 logger.info("User successfully logged in: " + username);
-
-                // Generate JWT token
                 String token = JwtUtil.generateToken(username);
-
                 out.println("HTTP/1.1 200 OK");
                 out.println("Content-Type: application/json");
                 out.println();
