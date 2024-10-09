@@ -15,7 +15,6 @@ public class HttpServer {
     private volatile boolean running = true;
     private static final Logger logger = Logger.getLogger(HttpServer.class.getName());
 
-
     public HttpServer(int port) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(10);
@@ -55,6 +54,27 @@ public class HttpServer {
         }
         if (serverSocket != null && !serverSocket.isClosed()) {
             serverSocket.close();
+        }
+    }
+
+    // Helper method to send error responses
+    private void sendErrorResponse(PrintWriter out, int statusCode, String message) {
+        out.println("HTTP/1.1 " + statusCode + " " + getHttpStatusMessage(statusCode));
+        out.println("Content-Type: application/json");
+        out.println();
+        out.println("{\"error\": \"" + message + "\"}");
+        out.flush();
+    }
+
+    // Map status codes to messages
+    private String getHttpStatusMessage(int statusCode) {
+        switch (statusCode) {
+            case 400: return "Bad Request";
+            case 401: return "Unauthorized";
+            case 403: return "Forbidden";
+            case 404: return "Not Found";
+            case 500: return "Internal Server Error";
+            default: return "Unknown Error";
         }
     }
 
@@ -105,10 +125,7 @@ public class HttpServer {
                     }
                     handleProfileRequest(in, out, authHeader);
                 } else {
-                    out.println("HTTP/1.1 404 Not Found");
-                    out.println("Content-Type: text/plain");
-                    out.println();
-                    out.println("Error: Path not found.");
+                    sendErrorResponse(out, 404, "Path not found.");
                 }
                 out.flush();
             }
@@ -135,24 +152,15 @@ public class HttpServer {
                     out.println("{\"message\": \"User registered successfully.\"}");
                 } else {
                     logger.warning("Username already exists: " + username);
-                    out.println("HTTP/1.1 400 Bad Request");
-                    out.println("Content-Type: application/json");
-                    out.println();
-                    out.println("{\"error\": \"Username already exists.\"}");
+                    sendErrorResponse(out, 400, "Username already exists.");
                 }
             } else {
                 logger.warning("Invalid input received");
-                out.println("HTTP/1.1 400 Bad Request");
-                out.println("Content-Type: application/json");
-                out.println();
-                out.println("{\"error\": \"Invalid input.\"}");
+                sendErrorResponse(out, 400, "Invalid input.");
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody, e);
-            out.println("HTTP/1.1 400 Bad Request");
-            out.println("Content-Type: application/json");
-            out.println();
-            out.println("{\"error\": \"Malformed JSON.\"}");
+            sendErrorResponse(out, 400, "Malformed JSON.");
         }
         out.flush();
     }
@@ -179,39 +187,25 @@ public class HttpServer {
                 out.println("{\"token\": \"" + token + "\"}");
             } else {
                 logger.warning("Invalid credentials for user: " + username);
-                out.println("HTTP/1.1 401 Unauthorized");
-                out.println("Content-Type: application/json");
-                out.println();
-                out.println("{\"error\": \"Invalid credentials.\"}");
+                sendErrorResponse(out, 401, "Invalid credentials.");
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody, e);
-            out.println("HTTP/1.1 400 Bad Request");
-            out.println("Content-Type: application/json");
-            out.println();
-            out.println("{\"error\": \"Malformed JSON.\"}");
+            sendErrorResponse(out, 400, "Malformed JSON.");
         }
         out.flush();
     }
 
     private void handleProfileRequest(BufferedReader in, PrintWriter out, String authHeader) throws IOException {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            out.println("HTTP/1.1 401 Unauthorized");
-            out.println("Content-Type: application/json");
-            out.println();
-            out.println("{\"error\": \"Missing or invalid token.\"}");
-            out.flush();
+            sendErrorResponse(out, 401, "Missing or invalid token.");
             return;
         }
 
         String token = authHeader.substring(7);
         String username = JwtUtil.validateToken(token);
         if (username == null) {
-            out.println("HTTP/1.1 401 Unauthorized");
-            out.println("Content-Type: application/json");
-            out.println();
-            out.println("{\"error\": \"Invalid or expired token.\"}");
-            out.flush();
+            sendErrorResponse(out, 401, "Invalid or expired token.");
             return;
         }
 
