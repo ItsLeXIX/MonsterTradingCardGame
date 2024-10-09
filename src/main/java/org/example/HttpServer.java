@@ -58,6 +58,28 @@ public class HttpServer {
         }
     }
 
+    private String readRequestBody(BufferedReader in) throws IOException {
+        StringBuilder requestBody = new StringBuilder();
+        int contentLength = 0;
+        String line;
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+
+        logger.info("Content-Length: " + contentLength);
+        char[] buffer = new char[contentLength];
+        int totalRead = 0, charsRead;
+        while (totalRead < contentLength && (charsRead = in.read(buffer, totalRead, contentLength - totalRead)) != -1) {
+            totalRead += charsRead;
+        }
+        requestBody.append(buffer);
+
+        logger.info("Received Request Body: " + requestBody);
+        return requestBody.toString();
+    }
+
     private void handleClient(Socket clientSocket) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
@@ -87,26 +109,10 @@ public class HttpServer {
     }
 
     private void handlePostRequest(BufferedReader in, PrintWriter out) throws IOException {
-        StringBuilder requestBody = new StringBuilder();
-        int contentLength = 0;
-        String line;
-
-        while (!(line = in.readLine()).isEmpty()) {
-            if (line.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt(line.split(":")[1].trim());
-            }
-        }
-
-        logger.info("Content-Length: " + contentLength);
-        char[] buffer = new char[contentLength];
-        in.read(buffer, 0, contentLength);
-        requestBody.append(buffer);
-
-        logger.info("Received Request Body: " + requestBody);
-
+        String requestBody = readRequestBody(in);
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<String, String> userData = mapper.readValue(requestBody.toString(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+            Map<String, String> userData = mapper.readValue(requestBody, new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
             String username = userData.get("Username");
             String password = userData.get("Password");
 
@@ -143,24 +149,11 @@ public class HttpServer {
     }
 
     private void handleLoginRequest(BufferedReader in, PrintWriter out) throws IOException {
-        StringBuilder requestBody = new StringBuilder();
-        int contentLength = 0;
-        String line;
-        while (!(line = in.readLine()).isEmpty()) {
-            if (line.startsWith("Content-Length:")) {
-                contentLength = Integer.parseInt(line.split(":")[1].trim());
-            }
-        }
+        String requestBody = readRequestBody(in);
 
-        logger.info("Content-Length: " + contentLength);
-        char[] buffer = new char[contentLength];
-        in.read(buffer, 0, contentLength);
-        requestBody.append(buffer);
-
-        logger.info("Received Request Body for login: " + requestBody);
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<String, String> loginData = mapper.readValue(requestBody.toString(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+            Map<String, String> loginData = mapper.readValue(requestBody, new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
 
             String username = loginData.get("Username");
             String password = loginData.get("Password");
@@ -179,7 +172,7 @@ public class HttpServer {
                 out.println("{\"error\": \"Invalid credentials.\"}");
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody.toString(), e);
+            logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody, e);
             out.println("HTTP/1.1 400 Bad Request");
             out.println("Content-Type: application/json");
             out.println();
