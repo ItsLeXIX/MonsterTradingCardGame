@@ -69,31 +69,80 @@ public class HttpServer {
                 String method = parts[0];
                 String path = parts[1];
 
-                if (method.equals("GET") && path.equals("/")) {
-                    out.println("HTTP/1.1 200 OK");
-                    out.println("Content-Type: text/plain");
-                    out.println();
-                    out.println("Welcome to the MTCG server!");
-                } else if (method.equals("POST") && path.equals("/register")) {
-                    logger.info("Handling POST request to /register");
+                if (method.equals("POST") && path.equals("/register")) {
                     handlePostRequest(in, out);
+                } else if (method.equals("POST") && path.equals("/login")) {
+                    handleLoginRequest(in, out);
                 } else {
-                    logger.info("Unknown path: " + path);
                     out.println("HTTP/1.1 404 Not Found");
                     out.println("Content-Type: text/plain");
                     out.println();
                     out.println("Error: Path not found.");
                 }
                 out.flush();
-            } else {
-                logger.warning("Empty request line");
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error handling client connection", e);
+            logger.log(Level.SEVERE, "Error handling client", e);
         }
     }
 
     private void handlePostRequest(BufferedReader in, PrintWriter out) throws IOException {
+        StringBuilder requestBody = new StringBuilder();
+        int contentLength = 0;
+        String line;
+
+        while (!(line = in.readLine()).isEmpty()) {
+            if (line.startsWith("Content-Length:")) {
+                contentLength = Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+
+        logger.info("Content-Length: " + contentLength);
+        char[] buffer = new char[contentLength];
+        in.read(buffer, 0, contentLength);
+        requestBody.append(buffer);
+
+        logger.info("Received Request Body: " + requestBody);
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            Map<String, String> userData = mapper.readValue(requestBody.toString(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
+            String username = userData.get("Username");
+            String password = userData.get("Password");
+
+            if (username != null && password != null) {
+                boolean registered = UserStore.registerUser(username, password);
+                if (registered) {
+                    logger.info("User successfully registered: " + username);
+                    out.println("HTTP/1.1 200 OK");
+                    out.println("Content-Type: application/json");
+                    out.println();
+                    out.println("{\"message\": \"User registered successfully.\"}");
+                } else {
+                    logger.warning("Username already exists: " + username);
+                    out.println("HTTP/1.1 400 Bad Request");
+                    out.println("Content-Type: application/json");
+                    out.println();
+                    out.println("{\"error\": \"Username already exists.\"}");
+                }
+            } else {
+                logger.warning("Invalid input received");
+                out.println("HTTP/1.1 400 Bad Request");
+                out.println("Content-Type: application/json");
+                out.println();
+                out.println("{\"error\": \"Invalid input.\"}");
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody, e);
+            out.println("HTTP/1.1 400 Bad Request");
+            out.println("Content-Type: application/json");
+            out.println();
+            out.println("{\"error\": \"Malformed JSON.\"}");
+        }
+        out.flush();
+    }
+
+    private void handleLoginRequest(BufferedReader in, PrintWriter out) throws IOException {
         StringBuilder requestBody = new StringBuilder();
         int contentLength = 0;
         String line;
@@ -104,35 +153,33 @@ public class HttpServer {
         }
 
         logger.info("Content-Length: " + contentLength);
-        char[] bodyChars = new char[contentLength];
-        int totalRead = 0, readChars;
-        while (totalRead < contentLength && (readChars = in.read(bodyChars, totalRead, contentLength - totalRead)) != -1) {
-            totalRead += readChars;
-        }
+        char[] buffer = new char[contentLength];
+        in.read(buffer, 0, contentLength);
+        requestBody.append(buffer);
 
-        requestBody.append(bodyChars);
-        logger.info("Received Request Body: " + requestBody);
+        logger.info("Received Request Body for login: " + requestBody);
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<String, String> userData = mapper.readValue(requestBody.toString(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
-            String username = userData.get("Username");
-            String password = userData.get("Password");
+            Map<String, String> loginData = mapper.readValue(requestBody.toString(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, String>>() {});
 
-            if (username != null && password != null) {
-                logger.info("User successfully registered: " + username);
+            String username = loginData.get("Username");
+            String password = loginData.get("Password");
+
+            if (UserStore.authenticateUser(username, password)) {
+                logger.info("User successfully logged in: " + username);
                 out.println("HTTP/1.1 200 OK");
                 out.println("Content-Type: application/json");
                 out.println();
-                out.println("{\"message\": \"User registered successfully.\"}");
+                out.println("{\"message\": \"Login successful.\"}");
             } else {
-                logger.warning("Invalid input received");
-                out.println("HTTP/1.1 400 Bad Request");
+                logger.warning("Invalid credentials for user: " + username);
+                out.println("HTTP/1.1 401 Unauthorized");
                 out.println("Content-Type: application/json");
                 out.println();
-                out.println("{\"error\": \"Invalid input.\"}");
+                out.println("{\"error\": \"Invalid credentials.\"}");
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody, e);
+            logger.log(Level.SEVERE, "Error parsing JSON or malformed input: " + requestBody.toString(), e);
             out.println("HTTP/1.1 400 Bad Request");
             out.println("Content-Type: application/json");
             out.println();
