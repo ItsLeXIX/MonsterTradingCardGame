@@ -95,6 +95,15 @@ public class HttpServer {
                     handlePostRequest(in, out);
                 } else if (method.equals("POST") && path.equals("/login")) {
                     handleLoginRequest(in, out);
+                } else if (method.equals("GET") && path.equals("/profile")) {
+                    String authHeader = null;
+                    String line;
+                    while (!(line = in.readLine()).isEmpty()) {
+                        if (line.startsWith("Authorization:")) {
+                            authHeader = line.split(":")[1].trim();
+                        }
+                    }
+                    handleProfileRequest(in, out, authHeader);
                 } else {
                     out.println("HTTP/1.1 404 Not Found");
                     out.println("Content-Type: text/plain");
@@ -160,10 +169,14 @@ public class HttpServer {
 
             if (UserStore.authenticateUser(username, password)) {
                 logger.info("User successfully logged in: " + username);
+
+                // Generate JWT token
+                String token = JwtUtil.generateToken(username);
+
                 out.println("HTTP/1.1 200 OK");
                 out.println("Content-Type: application/json");
                 out.println();
-                out.println("{\"message\": \"Login successful.\"}");
+                out.println("{\"token\": \"" + token + "\"}");
             } else {
                 logger.warning("Invalid credentials for user: " + username);
                 out.println("HTTP/1.1 401 Unauthorized");
@@ -178,6 +191,34 @@ public class HttpServer {
             out.println();
             out.println("{\"error\": \"Malformed JSON.\"}");
         }
+        out.flush();
+    }
+
+    private void handleProfileRequest(BufferedReader in, PrintWriter out, String authHeader) throws IOException {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            out.println("HTTP/1.1 401 Unauthorized");
+            out.println("Content-Type: application/json");
+            out.println();
+            out.println("{\"error\": \"Missing or invalid token.\"}");
+            out.flush();
+            return;
+        }
+
+        String token = authHeader.substring(7);
+        String username = JwtUtil.validateToken(token);
+        if (username == null) {
+            out.println("HTTP/1.1 401 Unauthorized");
+            out.println("Content-Type: application/json");
+            out.println();
+            out.println("{\"error\": \"Invalid or expired token.\"}");
+            out.flush();
+            return;
+        }
+
+        out.println("HTTP/1.1 200 OK");
+        out.println("Content-Type: application/json");
+        out.println();
+        out.println("{\"message\": \"Hello, " + username + "! This is your profile.\"}");
         out.flush();
     }
 
