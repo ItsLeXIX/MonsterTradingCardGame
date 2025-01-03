@@ -1,4 +1,4 @@
-package org.example;
+package org.example.models;
 
 public class MonsterCard extends Card {
     public MonsterCard(String name, double damage, String elementType) {

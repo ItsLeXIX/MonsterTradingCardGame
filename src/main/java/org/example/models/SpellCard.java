@@ -1,4 +1,4 @@
-package org.example;
+package org.example.models;
 
 public class SpellCard extends Card {
     public SpellCard(String name, double damage, String elementType) {
