@@ -177,4 +177,32 @@ public class UserRepository {
             return false;
         }
     }
+
+    public User getUserByUsername(String username) {
+        String query = "SELECT * FROM users WHERE username = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new User(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("name"),     // Fix: Include 'name'
+                        rs.getString("bio"),
+                        rs.getString("image"),
+                        rs.getInt("coins"),
+                        rs.getInt("elo"),
+                        rs.getInt("wins"),
+                        rs.getInt("losses")
+                );
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // Return null if user is not found
+    }
 }

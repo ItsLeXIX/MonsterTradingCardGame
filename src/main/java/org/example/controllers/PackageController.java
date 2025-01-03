@@ -18,10 +18,11 @@ public class PackageController {
     public AuthResponse createPackage(List<Card> cards) {
         boolean success = packageService.addPackage(cards);
 
+        // Updated to use the new AuthResponse constructor with success flag
         if (success) {
-            return new AuthResponse("Package created successfully.");
+            return new AuthResponse("Package created successfully.", true); // Success case
         } else {
-            return new AuthResponse("Failed to create package.");
+            return new AuthResponse("Failed to create package.", false); // Failure case
         }
     }
 }

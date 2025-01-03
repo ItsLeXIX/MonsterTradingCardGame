@@ -6,6 +6,7 @@ import org.example.dtos.LoginRequest;
 import org.example.dtos.RegisterRequest;
 import org.example.dtos.AuthResponse;
 import org.example.models.Card;
+import org.example.controllers.TransactionController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,6 +22,7 @@ public class Router {
     private final UserController userController = new UserController();
     private final PackageController packageController = new PackageController();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final TransactionController transactionController = new TransactionController();
 
     // Handle incoming requests
     public void handleRequest(String method, String path, BufferedReader in, PrintWriter out) throws Exception {
@@ -53,6 +55,40 @@ public class Router {
             // Process package creation
             AuthResponse response = packageController.createPackage(cards);
             sendJsonResponse(out, response.getMessage().contains("successfully") ? 201 : 400, response);
+        }
+
+        //TRANSACTION ROUTES ----------------------------------------
+        else if (method.equals("POST") && path.equals("/transactions/packages")) { // Acquire package
+            String authHeader = null;
+
+            // Read headers to find Authorization
+            String line;
+            while ((line = in.readLine()) != null && !line.isEmpty()) {
+                if (line.startsWith("Authorization: Bearer ")) {
+                    authHeader = line;
+                    break;
+                }
+            }
+
+            // Validate Authorization header
+            if (authHeader == null || !authHeader.startsWith("Authorization: Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract username from token
+            String token = authHeader.substring(22); // "Bearer " length = 7
+            if (!token.endsWith("-mtcgToken")) { // Validate token format
+                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
+                return;
+            }
+            String username = token.split("-")[0];
+
+            // Process transaction
+            AuthResponse response = transactionController.acquirePackage(username);
+
+            // Use success flag to set HTTP status codes
+            sendJsonResponse(out, response.isSuccess() ? 201 : 403, response); // New response handling
         }
 
         // DEFAULT ROUTE ----------------------------------------

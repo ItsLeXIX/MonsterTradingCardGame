@@ -1,6 +1,7 @@
 package org.example.models;
 
 public class User {
+
     private int id;
     private String username;
     private String password;
@@ -12,7 +13,7 @@ public class User {
     private int wins;
     private int losses;
 
-    // Full Constructor
+    // Constructor with all fields
     public User(int id, String username, String password, String name, String bio, String image, int coins, int elo, int wins, int losses) {
         this.id = id;
         this.username = username;
@@ -24,16 +25,6 @@ public class User {
         this.elo = elo;
         this.wins = wins;
         this.losses = losses;
-    }
-
-    // Simplified Constructor
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-        this.coins = 20; // Default values
-        this.elo = 100;
-        this.wins = 0;
-        this.losses = 0;
     }
 
     // Getters
@@ -49,9 +40,6 @@ public class User {
     public int getLosses() { return losses; }
 
     // Setters
-    public void setId(int id) { this.id = id; }
-    public void setUsername(String username) { this.username = username; }
-    public void setPassword(String password) { this.password = password; }
     public void setName(String name) { this.name = name; }
     public void setBio(String bio) { this.bio = bio; }
     public void setImage(String image) { this.image = image; }

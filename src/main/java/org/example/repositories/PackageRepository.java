@@ -71,4 +71,30 @@ public class PackageRepository {
         }
         return packages;
     }
+
+    public boolean assignPackageToUser(int userId) {
+        String query = "UPDATE cards SET owner_id = ? " +
+                "WHERE id IN (SELECT card_id FROM package_cards WHERE package_id = " +
+                "(SELECT id FROM packages LIMIT 1))";
+
+        String deleteQuery = "DELETE FROM packages WHERE id = (SELECT id FROM packages LIMIT 1)";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query);
+             PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+
+            // Assign cards to user
+            stmt.setInt(1, userId);
+            int updated = stmt.executeUpdate();
+
+            if (updated > 0) {
+                // Delete the assigned package
+                deleteStmt.executeUpdate();
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false; // Return false if assignment failed
+    }
 }

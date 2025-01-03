@@ -14,20 +14,26 @@ public class UserController {
         this.userService = new UserService();
     }
 
+    // Register user endpoint
     public AuthResponse register(RegisterRequest request) {
         boolean registered = userService.registerUser(request.getUsername(), request.getPassword());
+
+        // Updated to use new AuthResponse constructor
         if (registered) {
-            return new AuthResponse("User registered successfully.");
+            return new AuthResponse("User registered successfully.", true); // Success
         }
-        return new AuthResponse("Username already exists.");
+        return new AuthResponse("Username already exists.", false); // Failure
     }
 
+    // Login user endpoint
     public AuthResponse login(LoginRequest request) {
         boolean isAuthenticated = userService.authenticateUser(request.getUsername(), request.getPassword());
+
+        // Updated to use new AuthResponse constructor
         if (isAuthenticated) {
             String token = JwtUtil.generateToken(request.getUsername());
-            return new AuthResponse(token);
+            return new AuthResponse(token, true); // Success with token
         }
-        return new AuthResponse("Invalid credentials.");
+        return new AuthResponse("Invalid credentials.", false); // Failure
     }
 }
