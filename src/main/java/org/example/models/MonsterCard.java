@@ -1,7 +1,12 @@
 package org.example.models;
 
+import java.util.UUID;
+
 public class MonsterCard extends Card {
-    public MonsterCard(String name, double damage, String elementType) {
-        super(name, damage, elementType);
+
+    // Constructor for MonsterCard
+    public MonsterCard(UUID id, String name, double damage, String element, String status) {
+        // Call the parent constructor in Card
+        super(id, name, damage, element, "Monster", status); // Fixed argument count
     }
 }

@@ -15,7 +15,7 @@ public class Main {
 
         try {
             server.start();
-            logger.info("Server started successfully on port 8080");
+            logger.info("Server started successfully on port 10001");
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to start the server", e);
         }
