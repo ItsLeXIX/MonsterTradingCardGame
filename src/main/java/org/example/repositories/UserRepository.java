@@ -137,47 +137,60 @@ public class UserRepository {
         return users;
     }
 
-    public boolean registerUser(String username, String password) {
-        String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-
+    // Fetch user ID by username
+    public Integer getUserIdByUsername(String username) {
+        String query = "SELECT id FROM users WHERE username = ?";
         try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("id"); // Return user ID
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Return null if user not found
+    }
+
+    // Authenticate user
+    public boolean authenticateUser(String username, String password) {
+        String query = "SELECT id FROM users WHERE username = ? AND password = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
             stmt.setString(2, password);
-
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0;
-
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); // Return true if match found
         } catch (SQLException e) {
-            // Handle duplicate key exception
-            if (e.getSQLState().equals("23505")) { // PostgreSQL error code for unique violation
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Register new user
+    public boolean registerUser(String username, String password) {
+        String query = "INSERT INTO users (username, password) VALUES (?, ?)";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            int rows = stmt.executeUpdate();
+            return rows > 0; // Check if rows were inserted
+        } catch (SQLException e) {
+            if ("23505".equals(e.getSQLState())) { // Handle duplicate username
                 System.out.println("Duplicate username: " + username);
-                return false; // Return false for duplicate username
             }
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
 
-    public boolean authenticateUser(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-
-            ResultSet rs = stmt.executeQuery();
-            return rs.next(); // Returns true if user exists with given username and password
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
+    // Fetch a user by username
     public User getUserByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -191,7 +204,7 @@ public class UserRepository {
                         rs.getInt("id"),
                         rs.getString("username"),
                         rs.getString("password"),
-                        rs.getString("name"),     // Fix: Include 'name'
+                        rs.getString("name"),
                         rs.getString("bio"),
                         rs.getString("image"),
                         rs.getInt("coins"),
@@ -200,9 +213,10 @@ public class UserRepository {
                         rs.getInt("losses")
                 );
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return null; // Return null if user is not found
     }
+
 }

@@ -2,6 +2,7 @@ package org.example.repositories;
 
 import org.example.models.Card;
 import org.example.util.DatabaseUtil;
+import org.example.repositories.UserRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,7 +11,13 @@ import java.util.UUID;
 
 public class CardRepository {
 
-    // Add a Card
+    private final UserRepository userRepository;
+
+    public CardRepository() {
+        this.userRepository = new UserRepository();
+    }
+
+    // Add a new card
     public boolean addCard(Card card) {
         String sql = "INSERT INTO cards (id, name, damage, type, element, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -21,7 +28,7 @@ public class CardRepository {
             stmt.setDouble(3, card.getDamage());
             stmt.setString(4, card.getType());
             stmt.setString(5, card.getElement());
-            stmt.setString(6, card.getStatus()); // NEW: Add status field
+            stmt.setString(6, card.getStatus()); // Add status field
 
             int rows = stmt.executeUpdate();
             return rows > 0;
@@ -32,7 +39,7 @@ public class CardRepository {
         }
     }
 
-    // Retrieve All Cards
+    // Retrieve all cards
     public List<Card> getAllCards() {
         List<Card> cards = new ArrayList<>();
         String sql = "SELECT * FROM cards";
@@ -46,11 +53,45 @@ public class CardRepository {
                         UUID.fromString(rs.getString("id")),
                         rs.getString("name"),
                         rs.getDouble("damage"),
-                        rs.getString("element"),
                         rs.getString("type"),
-                        rs.getString("status") // NEW: Retrieve status
+                        rs.getString("element"),
+                        rs.getString("status") // Retrieve status
                 );
                 cards.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cards;
+    }
+
+    // Get all cards owned by a specific username
+    public List<Card> getCardsByUsername(String username) {
+        List<Card> cards = new ArrayList<>();
+
+        // Fetch user ID using UserRepository
+        Integer userId = userRepository.getUserIdByUsername(username);
+        if (userId == null) {
+            return cards; // Return empty list if user not found
+        }
+
+        // Query to get cards for the user
+        String query = "SELECT id, name, damage, type, element, status FROM cards WHERE owner_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                cards.add(new Card(
+                        UUID.fromString(rs.getString("id")),
+                        rs.getString("name"),
+                        rs.getDouble("damage"),
+                        rs.getString("type"),
+                        rs.getString("element"),
+                        rs.getString("status")
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();

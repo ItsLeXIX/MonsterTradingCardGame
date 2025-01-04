@@ -41,7 +41,7 @@ public class Router {
         // PACKAGE ROUTES ----------------------------------------
         else if (method.equals("POST") && path.equals("/packages")) { // Add packages
             // Authorization Header Check
-            String authHeader = getHeader(in, "Authorization"); // Read Authorization header properly
+            String authHeader = getHeader(in, "Authorization");
             if (authHeader == null || !authHeader.equals("Bearer admin-mtcgToken")) {
                 sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
                 return;
@@ -49,7 +49,7 @@ public class Router {
 
             // Parse request body into a list of cards
             List<Card> cards = objectMapper.readValue(
-                    readRequestBody(in), new TypeReference<List<Card>>() {} // FIXED parsing
+                    readRequestBody(in), new TypeReference<List<Card>>() {}
             );
 
             // Process package creation
@@ -57,28 +57,17 @@ public class Router {
             sendJsonResponse(out, response.getMessage().contains("successfully") ? 201 : 400, response);
         }
 
-        //TRANSACTION ROUTES ----------------------------------------
+        // TRANSACTION ROUTES ----------------------------------------
         else if (method.equals("POST") && path.equals("/transactions/packages")) { // Acquire package
-            String authHeader = null;
-
-            // Read headers to find Authorization
-            String line;
-            while ((line = in.readLine()) != null && !line.isEmpty()) {
-                if (line.startsWith("Authorization: Bearer ")) {
-                    authHeader = line;
-                    break;
-                }
-            }
-
-            // Validate Authorization header
-            if (authHeader == null || !authHeader.startsWith("Authorization: Bearer ")) {
+            String authHeader = getHeader(in, "Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
                 return;
             }
 
             // Extract username from token
-            String token = authHeader.substring(22); // "Bearer " length = 7
-            if (!token.endsWith("-mtcgToken")) { // Validate token format
+            String token = authHeader.substring(7);
+            if (!token.endsWith("-mtcgToken")) {
                 sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
                 return;
             }
@@ -86,9 +75,29 @@ public class Router {
 
             // Process transaction
             AuthResponse response = transactionController.acquirePackage(username);
+            sendJsonResponse(out, response.isSuccess() ? 201 : 403, response);
+        }
 
-            // Use success flag to set HTTP status codes
-            sendJsonResponse(out, response.isSuccess() ? 201 : 403, response); // New response handling
+        // CARD ROUTE ----------------------------------------
+        else if (method.equals("GET") && path.equals("/cards")) { // Retrieve user cards
+            String authHeader = getHeader(in, "Authorization");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract token and validate
+            String token = authHeader.substring(7);
+//            if (!token.endsWith("-mtcgToken")) {
+//                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
+//                return;
+//            }
+
+            // Extract username from token
+            String username = token.split("-")[0];
+
+            // Fetch user's cards
+            userController.getCards(token, out);
         }
 
         // DEFAULT ROUTE ----------------------------------------
@@ -120,7 +129,7 @@ public class Router {
     // Parses the request body into the specified class
     private <T> T parseBody(BufferedReader in, Class<T> clazz) throws Exception {
         String requestBody = readRequestBody(in);
-        System.out.println("Raw request body: " + requestBody); // Debugging
+        System.out.println("Raw request body: " + requestBody);
         return objectMapper.readValue(requestBody, clazz);
     }
 
@@ -130,17 +139,17 @@ public class Router {
         out.println("Content-Type: application/json");
         out.println();
         out.println(objectMapper.writeValueAsString(response));
-        out.flush(); // Flush output to ensure the response is sent immediately
+        out.flush();
     }
 
     // Reads specific header value
     private String getHeader(BufferedReader in, String headerName) throws IOException {
         String line;
-        while ((line = in.readLine()) != null && !line.isEmpty()) { // Read headers
-            if (line.startsWith(headerName + ":")) { // Match header name
-                return line.split(":")[1].trim(); // Extract value
+        while ((line = in.readLine()) != null && !line.isEmpty()) {
+            if (line.startsWith(headerName + ":")) {
+                return line.split(":")[1].trim();
             }
         }
-        return null; // Return null if header not found
+        return null;
     }
 }

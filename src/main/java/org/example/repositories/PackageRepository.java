@@ -73,24 +73,44 @@ public class PackageRepository {
     }
 
     public boolean assignPackageToUser(int userId) {
-        String query = "UPDATE cards SET owner_id = ? " +
-                "WHERE id IN (SELECT card_id FROM package_cards WHERE package_id = " +
-                "(SELECT id FROM packages LIMIT 1))";
+        String query =
+                "WITH selected_package AS (" +
+                        "    SELECT id FROM packages " +
+                        "    WHERE status = 'available' " +  // Check package availability
+                        "    LIMIT 1 FOR UPDATE SKIP LOCKED" + // Lock row to prevent double assignment
+                        ")" +
+                        "UPDATE cards " +
+                        "SET owner_id = ? " +  // Assign user ID
+                        "WHERE id IN (" +
+                        "    SELECT card_id FROM package_cards " +
+                        "    WHERE package_id = (SELECT id FROM selected_package)" +
+                        ");";
 
-        String deleteQuery = "DELETE FROM packages WHERE id = (SELECT id FROM packages LIMIT 1)";
+        String deleteQuery =
+                "DELETE FROM packages " +
+                        "WHERE id IN (SELECT id FROM packages WHERE status = 'available' LIMIT 1);";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query);
-             PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
+        try (Connection conn = DatabaseUtil.getConnection()) {
+            conn.setAutoCommit(false); // Start transaction
 
-            // Assign cards to user
-            stmt.setInt(1, userId);
-            int updated = stmt.executeUpdate();
+            try (PreparedStatement stmt = conn.prepareStatement(query);
+                 PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
 
-            if (updated > 0) {
-                // Delete the assigned package
-                deleteStmt.executeUpdate();
-                return true;
+                // Assign cards to user
+                stmt.setInt(1, userId);
+                int updated = stmt.executeUpdate();
+
+                if (updated > 0) {
+                    // Delete the assigned package
+                    deleteStmt.executeUpdate();
+
+                    // Commit transaction
+                    conn.commit();
+                    System.out.println("Package assigned successfully.");
+                    return true;
+                } else {
+                    conn.rollback(); // Rollback if assignment fails
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
