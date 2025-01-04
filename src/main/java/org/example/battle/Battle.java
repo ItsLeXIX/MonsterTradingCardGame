@@ -1,6 +1,8 @@
 package org.example.battle;
 
 import org.example.models.Card;
+import org.example.repositories.UserRepository;
+import org.example.models.User;
 
 import java.util.*;
 
@@ -12,8 +14,14 @@ public class Battle {
 
     private static final int MAX_ROUNDS = 100; // Prevent endless loops
 
-    public Battle(List<Card> player1Deck, List<Card> player2Deck) {
+    private final String player1Name;
+    private final String player2Name;
+    private final UserRepository userRepository = new UserRepository();
+
+    public Battle(String player1Name, List<Card> player1Deck, String player2Name, List<Card> player2Deck) {
+        this.player1Name = player1Name;
         this.player1Deck = new ArrayList<>(player1Deck);
+        this.player2Name = player2Name;
         this.player2Deck = new ArrayList<>(player2Deck);
     }
 
@@ -29,8 +37,8 @@ public class Battle {
             Card player2Card = getRandomCard(player2Deck);
 
             // Log card details
-            battleLog.add("Player 1 plays " + player1Card.getName() + " with " + player1Card.getDamage() + " damage.");
-            battleLog.add("Player 2 plays " + player2Card.getName() + " with " + player2Card.getDamage() + " damage.");
+            battleLog.add("Player 1 (" + player1Name + ") plays " + player1Card.getName() + " with " + player1Card.getDamage() + " damage.");
+            battleLog.add("Player 2 (" + player2Name + ") plays " + player2Card.getName() + " with " + player2Card.getDamage() + " damage.");
 
             // Process the round
             processRound(player1Card, player2Card);
@@ -39,6 +47,10 @@ public class Battle {
         // Determine the winner
         String result = getBattleResult();
         battleLog.add(result);
+
+        // Update player stats based on the result
+        updatePlayerStats(result);
+
         return String.join("\n", battleLog);
     }
 
@@ -66,13 +78,11 @@ public class Battle {
     }
 
     private double calculateDamage(Card attacker, Card defender) {
-        // Specialties
         if (isSpecialCase(attacker, defender)) {
             battleLog.add(attacker.getName() + " cannot damage " + defender.getName() + ".");
             return 0;
         }
 
-        // Calculate elemental effect
         double damage = attacker.getDamage();
         if (attacker.getType().equals("spell") || defender.getType().equals("spell")) {
             damage *= getElementMultiplier(attacker.getElement(), defender.getElement());
@@ -82,7 +92,6 @@ public class Battle {
     }
 
     private boolean isSpecialCase(Card attacker, Card defender) {
-        // Specialty rules
         return (attacker.getName().contains("Goblin") && defender.getName().contains("Dragon")) ||
                 (attacker.getName().contains("Wizzard") && defender.getName().contains("Ork")) ||
                 (attacker.getName().contains("Knight") && defender.getName().contains("WaterSpell")) ||
@@ -91,7 +100,6 @@ public class Battle {
     }
 
     private double getElementMultiplier(String attackerElement, String defenderElement) {
-        // Element effectiveness
         if (attackerElement.equals("water") && defenderElement.equals("fire")) return 2.0;
         if (attackerElement.equals("fire") && defenderElement.equals("normal")) return 2.0;
         if (attackerElement.equals("normal") && defenderElement.equals("water")) return 2.0;
@@ -100,7 +108,7 @@ public class Battle {
         if (attackerElement.equals("normal") && defenderElement.equals("fire")) return 0.5;
         if (attackerElement.equals("water") && defenderElement.equals("normal")) return 0.5;
 
-        return 1.0; // No effect
+        return 1.0;
     }
 
     private String getBattleResult() {
@@ -111,5 +119,30 @@ public class Battle {
         } else {
             return "Player 1 wins the battle!";
         }
+    }
+
+    private void updatePlayerStats(String result) {
+        User player1 = userRepository.getUserByUsername(player1Name);
+        User player2 = userRepository.getUserByUsername(player2Name);
+
+        if (result.contains("Player 1")) {
+            player1.setWins(player1.getWins() + 1);
+            player1.setElo(player1.getElo() + 10);
+            player2.setLosses(player2.getLosses() + 1);
+            player2.setElo(player2.getElo() - 5);
+        } else if (result.contains("Player 2")) {
+            player2.setWins(player2.getWins() + 1);
+            player2.setElo(player2.getElo() + 10);
+            player1.setLosses(player1.getLosses() + 1);
+            player1.setElo(player1.getElo() - 5);
+        } else {
+            // Draw case, no ELO change
+            player1.setElo(player1.getElo());
+            player2.setElo(player2.getElo());
+        }
+
+        // Update in DB
+        userRepository.updateUser(player1);
+        userRepository.updateUser(player2);
     }
 }

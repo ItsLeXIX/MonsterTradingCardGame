@@ -7,6 +7,8 @@ import org.example.dtos.RegisterRequest;
 import org.example.dtos.AuthResponse;
 import org.example.models.Card;
 import org.example.controllers.TransactionController;
+import org.example.repositories.CardRepository;
+import org.example.battle.Battle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,8 +16,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 public class Router {
 
@@ -23,6 +26,11 @@ public class Router {
     private final PackageController packageController = new PackageController();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TransactionController transactionController = new TransactionController();
+    private final CardRepository cardRepository = new CardRepository();
+
+
+    // Queue to store players waiting for a battle
+    private static final Queue<String> waitingPlayers = new ConcurrentLinkedQueue<>();
 
     // Handle incoming requests
     public void handleRequest(String method, String path, BufferedReader in, PrintWriter out) throws Exception {
@@ -100,6 +108,34 @@ public class Router {
             userController.getCards(token, out);
         }
 
+        // BATTLE ROUTE ----------------------------------------
+        else if (method.equals("POST") && path.equals("/battles")) { // Join a battle
+            String authHeader = getHeader(in, "Authorization");
+
+            // Validate Authorization header
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract username from token
+            String token = authHeader.substring(7); // Remove "Bearer "
+//            if (!token.endsWith("-mtcgToken")) {
+//                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
+//                return;
+//            }
+            String username = token.split("-")[0];
+
+            // Add player to waiting queue
+            waitingPlayers.add(username);
+            sendJsonResponse(out, 200, Map.of("message", "Player " + username + " is waiting for a battle."));
+
+            // Start battle if 2 players are available
+            if (waitingPlayers.size() >= 2) {
+                startBattle(out);
+            }
+        }
+
         // DEFAULT ROUTE ----------------------------------------
         else {
             sendJsonResponse(out, 404, Map.of("error", "Path not found"));
@@ -125,6 +161,30 @@ public class Router {
 
         return body.toString();
     }
+
+    private void startBattle(PrintWriter out) throws Exception {
+        // Fetch players from the queue
+        String player1 = waitingPlayers.poll();
+        String player2 = waitingPlayers.poll();
+
+        // Fetch decks for both players
+        List<Card> player1Deck = cardRepository.getCardsByUsername(player1);
+        List<Card> player2Deck = cardRepository.getCardsByUsername(player2);
+
+        // Validate decks
+        if (player1Deck.isEmpty() || player2Deck.isEmpty()) {
+            sendJsonResponse(out, 400, Map.of("error", "Both players need at least one card to battle"));
+            return;
+        }
+
+        // Start the battle
+        Battle battle = new Battle(player1, player1Deck, player2, player2Deck);
+        String battleResult = battle.startBattle();
+
+        // Send the battle log to both players
+        sendJsonResponse(out, 200, Map.of("battleLog", battleResult));
+    }
+
 
     // Parses the request body into the specified class
     private <T> T parseBody(BufferedReader in, Class<T> clazz) throws Exception {
