@@ -42,6 +42,10 @@ public class Battle {
 
             // Process the round
             processRound(player1Card, player2Card);
+
+            //debug
+            battleLog.add("Player 1 deck size: " + player1Deck.size());
+            battleLog.add("Player 2 deck size: " + player2Deck.size());
         }
 
         // Determine the winner
@@ -88,44 +92,78 @@ public class Battle {
     }
 
     private void processRound(Card card1, Card card2) {
+        // Calculate damage for both players
         double damage1 = calculateDamage(card1, card2);
         double damage2 = calculateDamage(card2, card1);
 
+        // Log calculated damage
         battleLog.add("Damage calculated: Player 1 -> " + damage1 + ", Player 2 -> " + damage2);
+        System.out.println("Damage calculated: Player 1 -> " + damage1 + ", Player 2 -> " + damage2);
 
         if (damage1 > damage2) {
+            // Player 1 wins the round
             battleLog.add("Player 1 wins the round.");
-            player1Deck.add(card2); // Take opponent's card
-            player2Deck.remove(card2); // Remove from opponent's deck
+
+            // Safely remove the card from Player 2's deck using equals()
+            boolean removed = player2Deck.removeIf(c -> c.getId().equals(card2.getId()));
+            if (removed) {
+                // Add the **original card** to Player 1's deck (not a cloned card)
+                player1Deck.add(card2);
+            } else {
+                System.err.println("Failed to remove card from Player 2 deck: " + card2.getId());
+            }
+
         } else if (damage2 > damage1) {
+            // Player 2 wins the round
             battleLog.add("Player 2 wins the round.");
-            player2Deck.add(card1); // Take opponent's card
-            player1Deck.remove(card1); // Remove from opponent's deck
+
+            // Safely remove the card from Player 1's deck using equals()
+            boolean removed = player1Deck.removeIf(c -> c.getId().equals(card1.getId()));
+            if (removed) {
+                // Add the **original card** to Player 2's deck (not a cloned card)
+                player2Deck.add(card1);
+            } else {
+                System.err.println("Failed to remove card from Player 1 deck: " + card1.getId());
+            }
+
         } else {
+            // Round ends in a draw
             battleLog.add("Round ends in a draw.");
+
+            // Fatigue Mechanic: Remove a random card from each deck to avoid infinite loops
+            if (!player1Deck.isEmpty()) {
+                Card fatigueCard1 = getRandomCard(player1Deck);
+                player1Deck.remove(fatigueCard1);
+                battleLog.add("Player 1 loses a card: " + fatigueCard1.getName());
+            }
+            if (!player2Deck.isEmpty()) {
+                Card fatigueCard2 = getRandomCard(player2Deck);
+                player2Deck.remove(fatigueCard2);
+                battleLog.add("Player 2 loses a card: " + fatigueCard2.getName());
+            }
         }
     }
 
     private double calculateDamage(Card attacker, Card defender) {
         if (isSpecialCase(attacker, defender)) {
             battleLog.add(attacker.getName() + " cannot damage " + defender.getName() + ".");
+            System.out.println(attacker.getName() + " cannot damage " + defender.getName());
             return 0;
         }
 
-        // Default damage
         double damage = attacker.getDamage();
-
-        // Handle null values safely
         String attackerType = attacker.getType() != null ? attacker.getType() : "monster";
         String defenderType = defender.getType() != null ? defender.getType() : "monster";
         String attackerElement = attacker.getElement() != null ? attacker.getElement() : "normal";
         String defenderElement = defender.getElement() != null ? defender.getElement() : "normal";
 
-        // Apply element multiplier only for spell cards
         if (attackerType.equals("spell") || defenderType.equals("spell")) {
-            damage *= getElementMultiplier(attackerElement, defenderElement);
+            double multiplier = getElementMultiplier(attackerElement, defenderElement);
+            damage *= multiplier;
+            System.out.println("Elemental multiplier: " + multiplier);
         }
 
+        System.out.println(attacker.getName() + " calculated damage: " + damage);
         return damage;
     }
 
