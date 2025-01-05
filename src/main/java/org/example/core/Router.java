@@ -1,10 +1,11 @@
 package org.example.core;
 
-import com.fasterxml.jackson.core.JacksonException;
 import org.example.repositories.*;
 import org.example.controllers.*;
 import org.example.dtos.*;
+import org.example.services.*;
 import org.example.models.Card;
+import org.example.models.Trade;
 import org.example.battle.Battle;
 import org.example.util.JwtUtil;
 
@@ -20,13 +21,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Router {
 
-    private final UserController userController = new UserController();
+    private final UserController userController = new UserController(userService);
     private final PackageController packageController = new PackageController();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TransactionController transactionController = new TransactionController();
     private final CardRepository cardRepository = new CardRepository();
     private final UserRepository userRepository = new UserRepository();
     private final DeckRepository deckRepository = new DeckRepository();
+    private final TradeRepository tradeRepository = new TradeRepository();
+    private final TradeService tradeService = new TradeService(tradeRepository, cardRepository, userRepository);
+    private final TradeController tradeController = new TradeController(tradeService);
     private final JwtUtil jwtUtil = new JwtUtil();
 
 
@@ -277,6 +281,76 @@ public class Router {
             }
         }
 
+        //TRADE ROUTE ----------------------------------------
+        else if (method.equals("GET") && path.equals("/tradings")) {
+            String authHeader = getHeader(in, "Authorization");
+            String username = validateAndExtractUsername(authHeader);
+
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            try {
+                List<Trade> trades = tradeRepository.getAllTrades();
+                sendJsonResponse(out, 200, trades); // Return the list of trades
+            } catch (Exception e) {
+                sendJsonResponse(out, 500, Map.of("error", "Failed to fetch trades"));
+            }
+        }else if (method.equals("POST") && path.equals("/tradings")) {
+            String authHeader = getHeader(in, "Authorization");
+            String username = validateAndExtractUsername(authHeader);
+
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            try {
+                Trade trade = parseBody(in, Trade.class); // Parse the trade object
+                tradeRepository.addTrade(trade);            // Add trade
+                sendJsonResponse(out, 201, Map.of("message", "Trade created successfully"));
+            } catch (Exception e) {
+                sendJsonResponse(out, 400, Map.of("error", "Failed to create trade: " + e.getMessage()));
+            }
+        }else if (method.equals("DELETE") && path.startsWith("/tradings/")) {
+            String authHeader = getHeader(in, "Authorization");
+            String username = validateAndExtractUsername(authHeader);
+
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            try {
+                UUID tradeId = UUID.fromString(path.split("/")[2]);
+                tradeRepository.deleteTrade(tradeId);
+                sendJsonResponse(out, 204, Map.of("message", "Trade deleted successfully"));
+            } catch (Exception e) {
+                sendJsonResponse(out, 500, Map.of("error", "Failed to delete trade: " + e.getMessage()));
+            }
+        }else if (method.equals("POST") && path.startsWith("/tradings/")) {
+            String authHeader = getHeader(in, "Authorization");
+            String username = validateAndExtractUsername(authHeader);
+
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            try {
+                UUID tradeId = UUID.fromString(path.split("/")[2]); // Extract trade ID from path
+                UUID offeredCardId = UUID.fromString(parseBody(in, String.class)); // Offered card ID
+
+                int buyerId = userRepository.getUserIdByUsername(username); // Get buyer ID
+                boolean success = tradeService.executeTrade(tradeId, buyerId);
+
+                sendJsonResponse(out, success ? 201 : 400, Map.of("message", success ? "Trade executed successfully" : "Trade execution failed"));
+            } catch (Exception e) {
+                sendJsonResponse(out, 500, Map.of("error", "Failed to execute trade: " + e.getMessage()));
+            }
+        }
+
         // DEFAULT ROUTE ----------------------------------------
         else {
             sendJsonResponse(out, 404, Map.of("error", "Path not found"));
@@ -324,6 +398,19 @@ public class Router {
 
         // Send the battle log to both players
         sendJsonResponse(out, 200, Map.of("battleLog", battleResult));
+    }
+
+    private String validateAndExtractUsername(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null; // Unauthorized
+        }
+
+        String token = authHeader.substring(7); // Remove "Bearer "
+        if (token.endsWith("-mtcgToken")) {
+            return token.split("-")[0]; // Extract username for custom tokens
+        } else {
+            return JwtUtil.validateToken(token); // Validate JWT token if applicable
+        }
     }
 
 

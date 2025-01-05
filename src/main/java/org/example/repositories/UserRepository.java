@@ -1,5 +1,6 @@
 package org.example.repositories;
 
+import org.example.models.Card;
 import org.example.models.User;
 import org.example.util.DatabaseUtil;
 
@@ -7,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UserRepository {
 
@@ -229,6 +231,36 @@ public class UserRepository {
             e.printStackTrace();
         }
         return null; // Return null if user is not found
+    }
+
+    public List<Card> getUserCards(int userId) throws SQLException {
+        List<Card> cards = new ArrayList<>();
+        String query = "SELECT * FROM cards WHERE owner_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                cards.add(new Card(
+                        UUID.fromString(rs.getString("id")),
+                        rs.getString("name"),
+                        rs.getDouble("damage"),
+                        rs.getString("type")
+                ));
+            }
+        }
+        return cards;
+    }
+
+    public void transferCard(int fromUser, int toUser, UUID cardId) throws SQLException {
+        String query = "UPDATE cards SET owner_id = ? WHERE id = ? AND owner_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, toUser);
+            stmt.setObject(2, cardId);
+            stmt.setInt(3, fromUser);
+            stmt.executeUpdate();
+        }
     }
 
 }

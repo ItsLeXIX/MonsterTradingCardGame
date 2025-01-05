@@ -7,6 +7,7 @@ import org.example.repositories.UserRepository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CardRepository {
@@ -97,5 +98,23 @@ public class CardRepository {
             e.printStackTrace();
         }
         return cards;
+    }
+
+    public Optional<Card> getCardById(UUID id) throws SQLException {
+        String query = "SELECT * FROM cards WHERE id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setObject(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return Optional.of(new Card(
+                        UUID.fromString(rs.getString("id")),
+                        rs.getString("name"),
+                        rs.getDouble("damage"),
+                        rs.getString("type")  // Assuming 'type' exists in DB
+                ));
+            }
+        }
+        return Optional.empty();
     }
 }

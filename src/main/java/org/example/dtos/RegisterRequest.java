@@ -19,6 +19,9 @@ public class RegisterRequest {
     @JsonProperty("Image")
     private String image;
 
+    public RegisterRequest(String testUser, String password) {
+    }
+
     // Getters and Setters
     public String getUsername() {
         return username;

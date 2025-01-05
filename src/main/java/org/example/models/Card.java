@@ -13,6 +13,7 @@ public class Card {
     private String type;
     private String status;
 
+    // Primary Constructor
     @JsonCreator
     public Card(
             @JsonProperty("Id") UUID id,
@@ -30,13 +31,23 @@ public class Card {
         this.status = status;
     }
 
-    // Getters and Setters are also required
+    // Simplified Constructor for DB operations
+    public Card(UUID id, String name, double damage, String type) {
+        this.id = id;
+        this.name = name;
+        this.damage = damage;
+        this.type = type;
+        this.element = null;
+        this.status = null;
+    }
+
+    // Getters and Setters
     public UUID getId() { return id; }
     public String getName() { return name; }
     public double getDamage() { return damage; }
-    public String getElement() { return element; }
+    public String getElement() { return (element == null) ? "none" : element; }
     public String getType() { return type; }
-    public String getStatus() { return status; }
+    public String getStatus() { return (status == null) ? "available" : status; }
 
     public void setId(UUID id) { this.id = id; }
     public void setName(String name) { this.name = name; }
@@ -44,4 +55,21 @@ public class Card {
     public void setElement(String element) { this.element = element; }
     public void setType(String type) { this.type = type; }
     public void setStatus(String status) { this.status = status; }
+
+    // Matching criteria for trading
+    public boolean matchesCriteria(String requiredType, double minDamage) {
+        return this.type.equalsIgnoreCase(requiredType) && this.damage >= minDamage;
+    }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", damage=" + damage +
+                ", element='" + element + '\'' +
+                ", type='" + type + '\'' +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }

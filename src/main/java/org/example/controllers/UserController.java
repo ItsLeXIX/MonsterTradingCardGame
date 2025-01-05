@@ -19,8 +19,8 @@ public class UserController {
     private final UserRepository userRepository;
     private final CardRepository cardRepository;
 
-    public UserController() {
-        this.userService = new UserService();
+    public UserController(UserService userService) {
+        this.userService = new UserService(userRepository);
         this.userRepository = new UserRepository();
         this.cardRepository = new CardRepository();
     }

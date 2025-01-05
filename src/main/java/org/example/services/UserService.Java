@@ -6,7 +6,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService() {
+    public UserService(UserRepository userRepository) {
         this.userRepository = new UserRepository();
     }
 
