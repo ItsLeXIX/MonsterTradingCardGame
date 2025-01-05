@@ -1,6 +1,7 @@
 package org.example.models;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Package {
     private int id;
@@ -12,6 +13,7 @@ public class Package {
         this.cardIds = cardIds;
         this.price = price;
     }
+
 
     // Getters
     public int getId() { return id; }

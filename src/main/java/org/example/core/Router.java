@@ -21,17 +21,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Router {
 
-    private final UserController userController = new UserController(userService);
+    private final UserRepository userRepository = new UserRepository();
+    private final UserService userService = new UserService(userRepository);
+    private final CardRepository cardRepository = new CardRepository();
+    private final UserController userController = new UserController(userService, userRepository, cardRepository);
     private final PackageController packageController = new PackageController();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TransactionController transactionController = new TransactionController();
-    private final CardRepository cardRepository = new CardRepository();
-    private final UserRepository userRepository = new UserRepository();
     private final DeckRepository deckRepository = new DeckRepository();
     private final TradeRepository tradeRepository = new TradeRepository();
     private final TradeService tradeService = new TradeService(tradeRepository, cardRepository, userRepository);
     private final TradeController tradeController = new TradeController(tradeService);
     private final JwtUtil jwtUtil = new JwtUtil();
+
 
 
     // Queue to store players waiting for a battle

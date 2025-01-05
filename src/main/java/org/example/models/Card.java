@@ -12,6 +12,7 @@ public class Card {
     private String element;
     private String type;
     private String status;
+    private String elementType;
 
     // Primary Constructor
     @JsonCreator
@@ -22,6 +23,7 @@ public class Card {
             @JsonProperty("Element") String element,
             @JsonProperty("Type") String type,
             @JsonProperty("Status") String status
+//            @JsonProperty("elementType") String elementType
     ) {
         this.id = id;
         this.name = name;
@@ -29,6 +31,7 @@ public class Card {
         this.element = element;
         this.type = type;
         this.status = status;
+        this.elementType = elementType;
     }
 
     // Simplified Constructor for DB operations
@@ -48,6 +51,7 @@ public class Card {
     public String getElement() { return (element == null) ? "none" : element; }
     public String getType() { return type; }
     public String getStatus() { return (status == null) ? "available" : status; }
+    public String getElementType() { return elementType; }
 
     public void setId(UUID id) { this.id = id; }
     public void setName(String name) { this.name = name; }

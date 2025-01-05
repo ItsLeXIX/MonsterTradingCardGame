@@ -10,6 +10,12 @@ public class Battle {
 
     private final List<Card> player1Deck;
     private final List<Card> player2Deck;
+    private static final Map<String, String> ELEMENTAL_ADVANTAGES = new HashMap<>();
+    static {
+        ELEMENTAL_ADVANTAGES.put("Fire", "Grass");
+        ELEMENTAL_ADVANTAGES.put("Grass", "Water");
+        ELEMENTAL_ADVANTAGES.put("Water", "Fire");
+    }
     private final List<String> battleLog = new ArrayList<>();
 
     private static final int MAX_ROUNDS = 100; // Prevent endless loops
@@ -48,6 +54,7 @@ public class Battle {
             battleLog.add("Player 2 deck size: " + player2Deck.size());
         }
 
+
         // Determine the winner
         String result = getBattleResult();
         battleLog.add(result);
@@ -56,6 +63,7 @@ public class Battle {
         updatePlayerStats(result);
 
         return String.join("\n", battleLog);
+
     }
 
     public List<String> startBattleLogs() {
@@ -220,5 +228,61 @@ public class Battle {
         // Update in DB
         userRepository.updateUser(player1);
         userRepository.updateUser(player2);
+    }
+
+    // Fight function between two cards
+    public String fight(Card card1, Card card2) {
+        // Input validation
+        if (card1 == null || card2 == null) {
+            throw new IllegalArgumentException("Invalid card input");
+        }
+        if (card1.getDamage() < 0 || card2.getDamage() < 0) {
+            throw new IllegalArgumentException("Damage value must be positive");
+        }
+
+        // Check special rules
+        if (isSpecialRule(card1, card2)) {
+            return determineSpecialRuleWinner(card1, card2);
+        }
+
+        // Check elemental advantage
+        double card1Damage = calculateEffectiveDamage(card1, card2);
+        double card2Damage = calculateEffectiveDamage(card2, card1);
+
+        // Determine winner
+        if (card1Damage > card2Damage) {
+            return "Player 1 Wins";
+        } else if (card2Damage > card1Damage) {
+            return "Player 2 Wins";
+        } else {
+            return "Tie";
+        }
+    }
+
+    // Check for special rules between two cards
+    private boolean isSpecialRule(Card card1, Card card2) {
+        return (card1.getName().contains("Goblin") && card2.getName().contains("Dragon")) ||
+                (card1.getName().contains("Kraken") && card2.getName().contains("Spell"));
+    }
+
+    // Determine the winner based on special rules
+    private String determineSpecialRuleWinner(Card card1, Card card2) {
+        if (card1.getName().contains("Goblin") && card2.getName().contains("Dragon")) {
+            return "Player 2 Wins"; // Goblins fear Dragons
+        }
+        if (card1.getName().contains("Kraken") && card2.getName().contains("Spell")) {
+            return "Player 1 Wins"; // Kraken is immune to spells
+        }
+        return "Tie"; // Default fallback
+    }
+
+    // Calculate effective damage considering elemental advantages
+    private double calculateEffectiveDamage(Card attacker, Card defender) {
+        if (ELEMENTAL_ADVANTAGES.getOrDefault(attacker.getElementType(), "").equals(defender.getElementType())) {
+            return attacker.getDamage() * 2; // Double damage if element is advantageous
+        } else if (ELEMENTAL_ADVANTAGES.getOrDefault(defender.getElementType(), "").equals(attacker.getElementType())) {
+            return attacker.getDamage() / 2; // Half damage if element is weak
+        }
+        return attacker.getDamage(); // Normal damage otherwise
     }
 }

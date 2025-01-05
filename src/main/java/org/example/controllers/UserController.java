@@ -19,10 +19,10 @@ public class UserController {
     private final UserRepository userRepository;
     private final CardRepository cardRepository;
 
-    public UserController(UserService userService) {
-        this.userService = new UserService(userRepository);
-        this.userRepository = new UserRepository();
-        this.cardRepository = new CardRepository();
+    public UserController(UserService userService, UserRepository userRepository, CardRepository cardRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+        this.cardRepository = cardRepository;
     }
 
     // Register user endpoint
