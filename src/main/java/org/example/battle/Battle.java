@@ -54,6 +54,35 @@ public class Battle {
         return String.join("\n", battleLog);
     }
 
+    public List<String> startBattleLogs() {
+        List<String> logs = new ArrayList<>();
+
+        int round = 0;
+        while (!player1Deck.isEmpty() && !player2Deck.isEmpty() && round < MAX_ROUNDS) {
+            round++;
+            logs.add("Round " + round + ":");
+
+            // Select random cards
+            Card player1Card = getRandomCard(player1Deck);
+            Card player2Card = getRandomCard(player2Deck);
+
+            // Log card details
+            logs.add("Player 1 (" + player1Name + ") plays " + player1Card.getName() + " with " + player1Card.getDamage() + " damage.");
+            logs.add("Player 2 (" + player2Name + ") plays " + player2Card.getName() + " with " + player2Card.getDamage() + " damage.");
+
+            // Process round
+            processRound(player1Card, player2Card);
+        }
+
+        // Determine winner
+        logs.add(getBattleResult());
+
+        // Update player stats
+        updatePlayerStats(getBattleResult());
+
+        return logs; // Return logs incrementally
+    }
+
     private Card getRandomCard(List<Card> deck) {
         return deck.get(new Random().nextInt(deck.size()));
     }
@@ -83,9 +112,18 @@ public class Battle {
             return 0;
         }
 
+        // Default damage
         double damage = attacker.getDamage();
-        if (attacker.getType().equals("spell") || defender.getType().equals("spell")) {
-            damage *= getElementMultiplier(attacker.getElement(), defender.getElement());
+
+        // Handle null values safely
+        String attackerType = attacker.getType() != null ? attacker.getType() : "monster";
+        String defenderType = defender.getType() != null ? defender.getType() : "monster";
+        String attackerElement = attacker.getElement() != null ? attacker.getElement() : "normal";
+        String defenderElement = defender.getElement() != null ? defender.getElement() : "normal";
+
+        // Apply element multiplier only for spell cards
+        if (attackerType.equals("spell") || defenderType.equals("spell")) {
+            damage *= getElementMultiplier(attackerElement, defenderElement);
         }
 
         return damage;

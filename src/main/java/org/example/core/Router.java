@@ -209,7 +209,7 @@ public class Router {
             }
         }
 
-        // BATTLE ROUTE ----------------------------------------
+        //BATTLE ROUTE ----------------------------------------
         else if (method.equals("POST") && path.equals("/battles")) { // Join a battle
             String authHeader = getHeader(in, "Authorization");
 
@@ -219,21 +219,61 @@ public class Router {
                 return;
             }
 
-            // Extract username from token
-            String token = authHeader.substring(7); // Remove "Bearer "
-//            if (!token.endsWith("-mtcgToken")) {
-//                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
-//                return;
-//            }
-            String username = token.split("-")[0];
+            // Extract and validate token
+            String token = authHeader.substring(7);
+            String username = null;
+
+            // Handle username-based tokens
+            if (token.endsWith("-mtcgToken")) {
+                username = token.split("-")[0];
+            } else {
+                username = JwtUtil.validateToken(token);
+            }
+
+            // Check if username is valid
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Invalid token"));
+                return;
+            }
 
             // Add player to waiting queue
             waitingPlayers.add(username);
-            sendJsonResponse(out, 200, Map.of("message", "Player " + username + " is waiting for a battle."));
 
-            // Start battle if 2 players are available
+            // Check if we have two players and start the battle immediately
             if (waitingPlayers.size() >= 2) {
-                startBattle(out);
+                // Get both players from the queue
+                String player1 = waitingPlayers.poll();
+                String player2 = waitingPlayers.poll();
+
+                // Fetch decks for both players
+                List<Card> player1Deck = cardRepository.getCardsByUsername(player1);
+                List<Card> player2Deck = cardRepository.getCardsByUsername(player2);
+
+                // Validate decks
+                if (player1Deck.isEmpty() || player2Deck.isEmpty()) {
+                    sendJsonResponse(out, 400, Map.of("error", "Both players need at least one card to battle."));
+                    return;
+                }
+
+                // Start the battle
+                Battle battle = new Battle(player1, player1Deck, player2, player2Deck);
+
+                // Flush logs incrementally
+                out.println("HTTP/1.1 200 OK");
+                out.println("Content-Type: application/json");
+                out.println();
+                out.flush(); // Flush initial headers
+
+                for (String log : battle.startBattleLogs()) { // New method to stream logs incrementally
+                    out.println(log);
+                    out.flush(); // Flush after each log line
+                }
+
+                // Final flush
+                out.flush();
+            } else {
+                // Send waiting message if fewer than 2 players
+                sendJsonResponse(out, 200, Map.of("message", "Player " + username + " is waiting for a battle."));
             }
         }
 

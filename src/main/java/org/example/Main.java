@@ -14,8 +14,8 @@ public class Main {
     public static void main(String[] args) {
         HttpServer server = new HttpServer(10001);
 
-        String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJraWVuYm9lYyIsImlhdCI6MTczNjA1NzAwNSwiZXhwIjoxNzM2MDU4ODA1fQ.zkiAMo7x6FzGCxxzXuSqwMjihV1WmSk7M0ze6YwSkDY";
-        System.out.println("Decoded username: " + JwtUtil.validateToken(token));
+//        String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJraWVuYm9lYyIsImlhdCI6MTczNjA1NzAwNSwiZXhwIjoxNzM2MDU4ODA1fQ.zkiAMo7x6FzGCxxzXuSqwMjihV1WmSk7M0ze6YwSkDY";
+//        System.out.println("Decoded username: " + JwtUtil.validateToken(token));
 
         try {
             server.start();
