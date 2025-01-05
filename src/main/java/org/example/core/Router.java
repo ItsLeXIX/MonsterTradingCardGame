@@ -1,14 +1,12 @@
 package org.example.core;
 
-import org.example.controllers.UserController;
-import org.example.controllers.PackageController;
-import org.example.dtos.LoginRequest;
-import org.example.dtos.RegisterRequest;
-import org.example.dtos.AuthResponse;
+import com.fasterxml.jackson.core.JacksonException;
+import org.example.repositories.*;
+import org.example.controllers.*;
+import org.example.dtos.*;
 import org.example.models.Card;
-import org.example.controllers.TransactionController;
-import org.example.repositories.CardRepository;
 import org.example.battle.Battle;
+import org.example.util.JwtUtil;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,6 +25,9 @@ public class Router {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final TransactionController transactionController = new TransactionController();
     private final CardRepository cardRepository = new CardRepository();
+    private final UserRepository userRepository = new UserRepository();
+    private final DeckRepository deckRepository = new DeckRepository();
+    private final JwtUtil jwtUtil = new JwtUtil();
 
 
     // Queue to store players waiting for a battle
@@ -86,26 +87,126 @@ public class Router {
             sendJsonResponse(out, response.isSuccess() ? 201 : 403, response);
         }
 
-        // CARD ROUTE ----------------------------------------
         else if (method.equals("GET") && path.equals("/cards")) { // Retrieve user cards
+            String authHeader = getHeader(in, "Authorization");
+
+            // Validate Authorization header
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract and validate token
+            String token = authHeader.substring(7); // Remove "Bearer "
+            String username = null;
+
+            // Handle username-based tokens (e.g., kienboec-mtcgToken)
+            if (token.endsWith("-mtcgToken")) { // Username-based token
+                username = token.split("-")[0]; // Extract username directly
+            }
+            // Handle JWT tokens
+            else {
+                username = JwtUtil.validateToken(token); // Validate JWT and extract username
+            }
+
+            // Check if username is valid
+            if (username == null) {
+                sendJsonResponse(out, 403, Map.of("error", "Invalid token"));
+                return;
+            }
+
+            // Fetch user ID from database
+            Integer userId = userRepository.getUserIdByUsername(username);
+            if (userId == null) { // User not found
+                sendJsonResponse(out, 404, Map.of("error", "User not found"));
+                return;
+            }
+
+            // Fetch all cards owned by the user
+            List<Card> cards = cardRepository.getCardsByUsername(username);
+
+            if (cards.isEmpty()) {
+                sendJsonResponse(out, 204, Map.of("message", "No cards found"));
+            } else {
+                sendJsonResponse(out, 200, cards);
+            }
+        }
+
+        //DECK ROUTE ----------------------------------------
+        else if (method.equals("PUT") && path.equals("/deck")) { // Set deck
+            String authHeader = getHeader(in, "Authorization");
+
+            // Validate Authorization header
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract the token
+            String token = authHeader.substring(7); // Remove "Bearer "
+            String username = null;
+
+            // Handle username-based tokens
+            if (token.endsWith("-mtcgToken")) {
+                username = token.split("-")[0]; // Extract username
+            }
+            // Handle JWT tokens
+            else {
+                username = JwtUtil.validateToken(token); // Validate and extract username
+                if (username == null) { // JWT validation failed
+                    sendJsonResponse(out, 403, Map.of("error", "Invalid token"));
+                    return;
+                }
+            }
+
+            // Fetch user ID from database
+            Integer userId = userRepository.getUserIdByUsername(username);
+            if (userId == null) {
+                sendJsonResponse(out, 404, Map.of("error", "User not found"));
+                return;
+            }
+
+            // Parse request body for card IDs
+            List<UUID> cardIds = objectMapper.readValue(readRequestBody(in), new TypeReference<List<UUID>>() {});
+
+            // Validate and set the deck
+            boolean success = deckRepository.setDeck(userId, cardIds);
+            if (success) {
+                sendJsonResponse(out, 200, Map.of("message", "Deck updated successfully"));
+            } else {
+                sendJsonResponse(out, 400, Map.of("error", "Invalid deck setup. Deck must contain exactly 4 cards."));
+            }
+
+            System.out.println("Token: " + token);
+            System.out.println("Extracted username: " + username);
+            System.out.println("User ID: " + userId);
+        }
+
+        else if (method.equals("PUT") && path.equals("/deck")) { // Set deck
             String authHeader = getHeader(in, "Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
                 return;
             }
 
-            // Extract token and validate
             String token = authHeader.substring(7);
-//            if (!token.endsWith("-mtcgToken")) {
-//                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
-//                return;
-//            }
-
-            // Extract username from token
             String username = token.split("-")[0];
+            Integer userId = userRepository.getUserIdByUsername(username);
 
-            // Fetch user's cards
-            userController.getCards(token, out);
+            if (userId == null) {
+                sendJsonResponse(out, 404, Map.of("error", "User not found"));
+                return;
+            }
+
+            // Parse request body
+            List<UUID> cardIds = objectMapper.readValue(readRequestBody(in), new TypeReference<List<UUID>>() {});
+            boolean success = deckRepository.setDeck(userId, cardIds);
+
+            if (success) {
+                sendJsonResponse(out, 200, Map.of("message", "Deck updated successfully"));
+            } else {
+                sendJsonResponse(out, 400, Map.of("error", "Invalid deck setup. Deck must contain exactly 4 cards."));
+            }
         }
 
         // BATTLE ROUTE ----------------------------------------

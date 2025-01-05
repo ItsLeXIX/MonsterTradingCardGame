@@ -7,14 +7,14 @@ import java.sql.SQLException;
 public class DatabaseUtil {
 
     // Database connection details
-    private static final String URL = "jdbc:postgresql://localhost:5432/mctg";
-    private static final String USER = "postgres";  // PostgreSQL user
-    private static final String PASSWORD = "";     // No password due to 'trust'
+    private static final String URL = "jdbc:postgresql://localhost:5432/mctg"; // Replace with your database name
+    private static final String USER = "postgres";  // PostgreSQL username
+    private static final String PASSWORD = "";     // No password due to 'trust' authentication
 
     // Load PostgreSQL driver
     static {
         try {
-            Class.forName("org.postgresql.Driver");
+            Class.forName("org.postgresql.Driver"); // Ensure driver is loaded
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("PostgreSQL JDBC Driver not found!", e);
         }
@@ -22,6 +22,20 @@ public class DatabaseUtil {
 
     // Connect to the database
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+
+        // Log the database URL for debugging
+        System.out.println("Connected to database: " + conn.getMetaData().getURL());
+        return conn; // Return the connection object
+    }
+
+    // Test database connection
+    public static void testConnection() {
+        try (Connection conn = getConnection()) {
+            System.out.println("Database connection successful!");
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to database.");
+            e.printStackTrace();
+        }
     }
 }

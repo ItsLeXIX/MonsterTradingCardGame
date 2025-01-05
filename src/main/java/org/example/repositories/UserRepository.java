@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public class UserRepository {
 
+
     // Create a new user
     public boolean createUser(User user) {
         String sql = "INSERT INTO users (username, password, name, bio, image, coins, elo, wins, losses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -89,6 +90,7 @@ public class UserRepository {
         }
     }
 
+
     // Delete a user by username
     public boolean deleteUser(String username) {
         String sql = "DELETE FROM users WHERE username = ?";
@@ -143,16 +145,22 @@ public class UserRepository {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
+            System.out.println("Querying database for username: " + username);
+
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return rs.getInt("id"); // Return user ID
+                int userId = rs.getInt("id");
+                System.out.println("User found: ID = " + userId);
+                return userId;
+            } else {
+                System.out.println("User not found in database: " + username);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Return null if user not found
+        return null; // User not found
     }
 
     // Authenticate user
@@ -193,6 +201,10 @@ public class UserRepository {
     // Fetch a user by username
     public User getUserByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
+
+        System.out.println("Looking up user: " + username);
+
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
