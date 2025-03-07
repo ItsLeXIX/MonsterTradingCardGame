@@ -40,27 +40,27 @@ public class DeckRepository {
     }
 
     // Add cards to the deck
-    public boolean setDeck(int userId, List<UUID> cardIds) {
+    public boolean setDeck(UUID userId, List<UUID> cardIds) {
         if (cardIds.size() != 4) { // Deck must have exactly 4 cards
             return false;
         }
 
-        String deleteQuery = "DELETE FROM decks WHERE user_id = ?";
-        String insertQuery = "INSERT INTO decks (user_id, card_id) VALUES (?, ?)";
+        String deleteQuery = "DELETE FROM deck WHERE user_id = ?";  // Corrected table name to 'deck'
+        String insertQuery = "INSERT INTO deck (user_id, card_id) VALUES (?, ?)"; // Corrected table name to 'deck'
 
         try (Connection conn = DatabaseUtil.getConnection()) {
             conn.setAutoCommit(false);
 
             // Clear existing deck
             try (PreparedStatement deleteStmt = conn.prepareStatement(deleteQuery)) {
-                deleteStmt.setInt(1, userId);
+                deleteStmt.setObject(1, userId, Types.OTHER);
                 deleteStmt.executeUpdate();
             }
 
-            // Add new cards
+            // Add new cards to the deck
             try (PreparedStatement insertStmt = conn.prepareStatement(insertQuery)) {
                 for (UUID cardId : cardIds) {
-                    insertStmt.setInt(1, userId);
+                    insertStmt.setObject(1, userId, Types.OTHER);
                     insertStmt.setObject(2, cardId);
                     insertStmt.addBatch();
                 }
@@ -74,5 +74,33 @@ public class DeckRepository {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<Card> getDeck(UUID userId) {
+        List<Card> deck = new ArrayList<>();
+        String sql = "SELECT c.id, c.name, c.damage, c.type, c.element, c.status " +
+                "FROM cards c " +
+                "JOIN deck d ON c.id = d.card_id " +
+                "WHERE d.user_id = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setObject(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                deck.add(new Card(
+                        rs.getObject("id", UUID.class),
+                        rs.getString("name"),
+                        rs.getDouble("damage"),
+                        rs.getString("type"),
+                        rs.getString("element"),
+                        rs.getString("status")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return deck;
     }
 }

@@ -13,6 +13,15 @@ import java.util.UUID;
 public class CardRepository {
 
     private final UserRepository userRepository;
+    private String inferElement(String name) {
+        name = name.toLowerCase();
+
+        if (name.contains("fire")) return "fire";
+        if (name.contains("water")) return "water";
+        if (name.contains("regular")) return "normal";
+
+        return "normal";  // Fallback to normal instead of none
+    }
 
     public CardRepository() {
         this.userRepository = new UserRepository();
@@ -21,15 +30,26 @@ public class CardRepository {
     // Add a new card
     public boolean addCard(Card card) {
         String sql = "INSERT INTO cards (id, name, damage, type, element, status) VALUES (?, ?, ?, ?, ?, ?)";
+
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String inferredElement = inferElement(card.getName());
+
+            // Debug: Print the values being inserted
+            System.out.println("Inserting Card -> ID: " + card.getId() +
+                    ", Name: " + card.getName() +
+                    ", Damage: " + card.getDamage() +
+                    ", Type: " + card.getType() +
+                    ", Inferred Element: " + inferredElement +
+                    ", Status: " + card.getStatus());
 
             stmt.setObject(1, card.getId());
             stmt.setString(2, card.getName());
             stmt.setDouble(3, card.getDamage());
             stmt.setString(4, card.getType());
-            stmt.setString(5, card.getElement());
-            stmt.setString(6, card.getStatus()); // Add status field
+            stmt.setString(5, inferredElement);
+            stmt.setString(6, card.getStatus());
 
             int rows = stmt.executeUpdate();
             return rows > 0;
@@ -71,7 +91,7 @@ public class CardRepository {
         List<Card> cards = new ArrayList<>();
 
         // Fetch user ID using UserRepository
-        Integer userId = userRepository.getUserIdByUsername(username);
+        UUID userId = userRepository.getUserIdByUsername(username);
         if (userId == null) {
             return cards; // Return empty list if user not found
         }
@@ -81,7 +101,7 @@ public class CardRepository {
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, userId);
+            stmt.setObject(1, userId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {

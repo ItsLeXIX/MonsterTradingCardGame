@@ -29,6 +29,9 @@ public class UserRepository {
             stmt.setInt(8, user.getWins());
             stmt.setInt(9, user.getLosses());
 
+//          Inserts a new user into the users table
+//		    Uses PreparedStatement to prevent SQL injection attacks
+//		    Returns true if the user is successfully created otherwise false
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
 
@@ -49,7 +52,7 @@ public class UserRepository {
 
             if (rs.next()) {
                 User user = new User(
-                        rs.getInt("id"),
+                        rs.getObject("id", UUID.class),
                         rs.getString("username"),
                         rs.getString("password"),
                         rs.getString("name"),
@@ -120,7 +123,7 @@ public class UserRepository {
 
             while (rs.next()) {
                 User user = new User(
-                        rs.getInt("id"),
+                        rs.getObject("id", UUID.class),
                         rs.getString("username"),
                         rs.getString("password"),
                         rs.getString("name"),
@@ -142,7 +145,7 @@ public class UserRepository {
     }
 
     // Fetch user ID by username
-    public Integer getUserIdByUsername(String username) {
+    public UUID getUserIdByUsername(String username) {
         String query = "SELECT id FROM users WHERE username = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -153,7 +156,7 @@ public class UserRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                int userId = rs.getInt("id");
+                UUID userId = rs.getObject("id", UUID.class);
                 System.out.println("User found: ID = " + userId);
                 return userId;
             } else {
@@ -165,7 +168,7 @@ public class UserRepository {
         return null; // User not found
     }
 
-    // Authenticate user
+    // Authenticate user, checks if user exist
     public boolean authenticateUser(String username, String password) {
         String query = "SELECT id FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DatabaseUtil.getConnection();
@@ -215,7 +218,7 @@ public class UserRepository {
 
             if (rs.next()) {
                 return new User(
-                        rs.getInt("id"),
+                        rs.getObject("id", UUID.class),
                         rs.getString("username"),
                         rs.getString("password"),
                         rs.getString("name"),
@@ -233,12 +236,12 @@ public class UserRepository {
         return null; // Return null if user is not found
     }
 
-    public List<Card> getUserCards(int userId) throws SQLException {
+    public List<Card> getUserCards(UUID userId) throws SQLException {
         List<Card> cards = new ArrayList<>();
         String query = "SELECT * FROM cards WHERE owner_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, userId);
+            stmt.setObject(1, userId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 cards.add(new Card(
@@ -252,13 +255,13 @@ public class UserRepository {
         return cards;
     }
 
-    public void transferCard(int fromUser, int toUser, UUID cardId) throws SQLException {
+    public void transferCard(UUID fromUser, UUID toUser, UUID cardId) throws SQLException {
         String query = "UPDATE cards SET owner_id = ? WHERE id = ? AND owner_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, toUser);
+            stmt.setObject(1, toUser);
             stmt.setObject(2, cardId);
-            stmt.setInt(3, fromUser);
+            stmt.setObject(3, fromUser);
             stmt.executeUpdate();
         }
     }

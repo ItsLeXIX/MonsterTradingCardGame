@@ -18,7 +18,7 @@ public class TradeRepository {
             stmt.setObject(2, trade.getCardId());
             stmt.setString(3, trade.getRequiredType());
             stmt.setDouble(4, trade.getRequiredMinDamage());
-            stmt.setInt(5, trade.getOwnerId());
+            stmt.setObject(5, trade.getOwnerId());
             stmt.executeUpdate();
         }
     }
@@ -37,7 +37,7 @@ public class TradeRepository {
                         UUID.fromString(rs.getString("card_id")),
                         rs.getString("required_type"),
                         rs.getDouble("required_min_damage"),
-                        rs.getInt("owner_id")
+                        rs.getObject("owner_id", UUID.class)
                 ));
             }
         }
@@ -57,7 +57,7 @@ public class TradeRepository {
                         UUID.fromString(rs.getString("card_id")),
                         rs.getString("required_type"),
                         rs.getDouble("required_min_damage"),
-                        rs.getInt("owner_id")
+                        rs.getObject("owner_id", UUID.class)
                 ));
             }
         }

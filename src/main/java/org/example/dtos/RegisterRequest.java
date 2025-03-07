@@ -19,7 +19,19 @@ public class RegisterRequest {
     @JsonProperty("Image")
     private String image;
 
-    public RegisterRequest(String testUser, String password) {
+    public RegisterRequest() {}
+
+    // Full constructor
+    public RegisterRequest(@JsonProperty("Username") String username,
+                           @JsonProperty("Password") String password,
+                           @JsonProperty("Name") String name,
+                           @JsonProperty("Bio") String bio,
+                           @JsonProperty("Image") String image) {
+        this.username = username;
+        this.password = password;
+        this.name = name;
+        this.bio = bio;
+        this.image = image;
     }
 
     // Getters and Setters

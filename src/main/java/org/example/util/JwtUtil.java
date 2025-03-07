@@ -5,6 +5,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 import org.example.repositories.UserRepository;
 
@@ -52,7 +53,7 @@ public class JwtUtil {
     }
 
     // Validate token and fetch user ID from the database
-    public static Integer validateTokenAndGetUserId(String token) {
+    public static UUID validateTokenAndGetUserId(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)
@@ -64,7 +65,7 @@ public class JwtUtil {
             System.out.println("Extracted username from token: " + username);
 
             UserRepository userRepository = new UserRepository();
-            Integer userId = userRepository.getUserIdByUsername(username);
+            UUID userId = userRepository.getUserIdByUsername(username);
 
             System.out.println("Fetched user ID from DB: " + userId);
             return userId;

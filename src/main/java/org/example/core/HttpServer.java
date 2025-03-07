@@ -14,6 +14,9 @@ public class HttpServer {
     private final Router router;
     private static final Logger logger = Logger.getLogger(HttpServer.class.getName());
 
+// Initializes the port number.
+// Creates a new instance of Router for handling request routing.
+// Creates a fixed thread pool with 10 worker threads.
     public HttpServer(int port) {
         this.port = port;
         this.router = new Router();
@@ -22,11 +25,13 @@ public class HttpServer {
 
     public void start() throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+            // Creates a ServerSocket bound to the given port
             logger.info("Server started on port " + port);
             while (true) {
+                // accept client connections.
                 Socket clientSocket = serverSocket.accept();
                 logger.info("Accepted new connection");
-                threadPool.submit(new RequestHandler(clientSocket, router));
+                threadPool.submit(new RequestHandler(clientSocket, router));    // The RequestHandler class is responsible for handling incoming requests in parallel using the thread pool.
             }
         } catch (IOException e) {
             logger.severe("Server error: " + e.getMessage());

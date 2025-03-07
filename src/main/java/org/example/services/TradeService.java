@@ -22,7 +22,7 @@ public class TradeService {
     }
 
     // Execute a trade
-    public boolean executeTrade(UUID tradeId, int buyerId) throws SQLException {
+    public boolean executeTrade(UUID tradeId, UUID buyerId) throws SQLException {
         Optional<Trade> tradeOpt = tradeRepository.getTradeById(tradeId);
         if (tradeOpt.isEmpty()) return false;
 

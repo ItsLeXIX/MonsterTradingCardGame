@@ -2,6 +2,7 @@ package org.example.dtos;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Request {
     private String body;
@@ -54,7 +55,8 @@ public class Request {
     }
 
     // Example for userId extraction
-    public int getUserId() {
-        return Integer.parseInt(params.getOrDefault("userId", "0"));
+    public UUID getUserId() {
+        UUID userId = UUID.fromString(params.getOrDefault("userId", ""));
+        return userId;
     }
 }

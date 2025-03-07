@@ -28,7 +28,7 @@ public class PackageService {
             }
 
             // Generate a new package ID
-            Package newPackage = new Package(0, List.of(), 5); // ID will auto-increment
+            Package newPackage = new Package(UUID.randomUUID(), List.of(), 5); // Generates a UUID
 
             // Add cards to the database first
             for (Card card : cards) {

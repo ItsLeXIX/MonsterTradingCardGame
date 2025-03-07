@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.core.HttpServer;
 import org.example.util.JwtUtil;
+import org.example.util.DatabaseUtil;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -14,8 +15,7 @@ public class Main {
     public static void main(String[] args) {
         HttpServer server = new HttpServer(10001);
 
-//        String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJraWVuYm9lYyIsImlhdCI6MTczNjA1NzAwNSwiZXhwIjoxNzM2MDU4ODA1fQ.zkiAMo7x6FzGCxxzXuSqwMjihV1WmSk7M0ze6YwSkDY";
-//        System.out.println("Decoded username: " + JwtUtil.validateToken(token));
+        DatabaseUtil.testConnection();
 
         try {
             server.start();

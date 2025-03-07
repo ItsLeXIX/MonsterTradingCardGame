@@ -40,7 +40,7 @@ public class TradeController {
     // Execute a trade
     public void executeTrade(Request req, Response res) throws SQLException {
         UUID tradeId = UUID.fromString(req.getParam("id"));
-        int buyerId = req.getUserId();
+        UUID buyerId = req.getUserId();
         boolean success = tradeService.executeTrade(tradeId, buyerId);
         res.status(success ? 200 : 400); // OK or Bad Request
     }

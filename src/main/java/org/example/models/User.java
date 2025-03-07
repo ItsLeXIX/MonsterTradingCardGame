@@ -1,8 +1,10 @@
 package org.example.models;
 
+import java.util.UUID;
+
 public class User {
 
-    private int id;
+    private UUID id;
     private String username;
     private String password;
     private String name;
@@ -14,7 +16,7 @@ public class User {
     private int losses;
 
     // Constructor with all fields
-    public User(int id, String username, String password, String name, String bio, String image, int coins, int elo, int wins, int losses) {
+    public User(UUID id, String username, String password, String name, String bio, String image, int coins, int elo, int wins, int losses) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -28,7 +30,7 @@ public class User {
     }
 
     // Getters
-    public int getId() { return id; }
+    public UUID getId() { return id; }
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public String getName() { return name; }

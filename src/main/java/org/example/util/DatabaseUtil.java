@@ -7,9 +7,9 @@ import java.sql.SQLException;
 public class DatabaseUtil {
 
     // Database connection details
-    private static final String URL = "jdbc:postgresql://localhost:5432/mctg"; // Replace with your database name
-    private static final String USER = "postgres";  // PostgreSQL username
-    private static final String PASSWORD = "";     // No password due to 'trust' authentication
+    private static final String URL = "jdbc:postgresql://localhost:5432/mctg";
+    private static final String USER = "postgres";
+    private static final String PASSWORD = "";
 
     // Load PostgreSQL driver
     static {

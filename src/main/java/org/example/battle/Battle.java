@@ -24,6 +24,7 @@ public class Battle {
     private final String player2Name;
     private final UserRepository userRepository = new UserRepository();
 
+    //Constructor
     public Battle(String player1Name, List<Card> player1Deck, String player2Name, List<Card> player2Deck) {
         this.player1Name = player1Name;
         this.player1Deck = new ArrayList<>(player1Deck);
@@ -153,18 +154,22 @@ public class Battle {
     }
 
     private double calculateDamage(Card attacker, Card defender) {
+        // Special Rules
         if (isSpecialCase(attacker, defender)) {
             battleLog.add(attacker.getName() + " cannot damage " + defender.getName() + ".");
             System.out.println(attacker.getName() + " cannot damage " + defender.getName());
             return 0;
         }
 
+        // retrieves the base damage value from the attacker card and initializes several variables to store the
+        // types and elements of both the attacker and defender. If any of these attributes are null, default values are assigned
         double damage = attacker.getDamage();
         String attackerType = attacker.getType() != null ? attacker.getType() : "monster";
         String defenderType = defender.getType() != null ? defender.getType() : "monster";
         String attackerElement = attacker.getElement() != null ? attacker.getElement() : "normal";
         String defenderElement = defender.getElement() != null ? defender.getElement() : "normal";
 
+        // Checks for spell and if so calculates Elemental multiplier
         if (attackerType.equals("spell") || defenderType.equals("spell")) {
             double multiplier = getElementMultiplier(attackerElement, defenderElement);
             damage *= multiplier;
@@ -268,12 +273,12 @@ public class Battle {
     // Determine the winner based on special rules
     private String determineSpecialRuleWinner(Card card1, Card card2) {
         if (card1.getName().contains("Goblin") && card2.getName().contains("Dragon")) {
-            return "Player 2 Wins"; // Goblins fear Dragons
+            return "Player 2 Wins";
         }
         if (card1.getName().contains("Kraken") && card2.getName().contains("Spell")) {
-            return "Player 1 Wins"; // Kraken is immune to spells
+            return "Player 1 Wins";
         }
-        return "Tie"; // Default fallback
+        return "Tie";
     }
 
     // Calculate effective damage considering elemental advantages

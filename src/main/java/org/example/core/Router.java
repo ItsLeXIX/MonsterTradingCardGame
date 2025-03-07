@@ -82,10 +82,10 @@ public class Router {
 
             // Extract username from token
             String token = authHeader.substring(7);
-            if (!token.endsWith("-mtcgToken")) {
-                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
-                return;
-            }
+//            if (!token.endsWith("-mtcgToken")) {
+//                sendJsonResponse(out, 403, Map.of("error", "Invalid token format"));
+//                return;
+//            }
             String username = token.split("-")[0];
 
             // Process transaction
@@ -122,7 +122,7 @@ public class Router {
             }
 
             // Fetch user ID from database
-            Integer userId = userRepository.getUserIdByUsername(username);
+            UUID userId = userRepository.getUserIdByUsername(username);
             if (userId == null) { // User not found
                 sendJsonResponse(out, 404, Map.of("error", "User not found"));
                 return;
@@ -166,7 +166,7 @@ public class Router {
             }
 
             // Fetch user ID from database
-            Integer userId = userRepository.getUserIdByUsername(username);
+            UUID userId = userRepository.getUserIdByUsername(username);
             if (userId == null) {
                 sendJsonResponse(out, 404, Map.of("error", "User not found"));
                 return;
@@ -197,7 +197,7 @@ public class Router {
 
             String token = authHeader.substring(7);
             String username = token.split("-")[0];
-            Integer userId = userRepository.getUserIdByUsername(username);
+            UUID userId = userRepository.getUserIdByUsername(username);
 
             if (userId == null) {
                 sendJsonResponse(out, 404, Map.of("error", "User not found"));
@@ -212,6 +212,48 @@ public class Router {
                 sendJsonResponse(out, 200, Map.of("message", "Deck updated successfully"));
             } else {
                 sendJsonResponse(out, 400, Map.of("error", "Invalid deck setup. Deck must contain exactly 4 cards."));
+            }
+        }
+        else if (method.equals("GET") && path.equals("/deck")) { // Retrieve deck
+            String authHeader = getHeader(in, "Authorization");
+
+            // Validate Authorization header
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                sendJsonResponse(out, 403, Map.of("error", "Unauthorized"));
+                return;
+            }
+
+            // Extract the token
+            String token = authHeader.substring(7); // Remove "Bearer "
+            String username = null;
+
+            // Handle username-based tokens
+            if (token.endsWith("-mtcgToken")) {
+                username = token.split("-")[0]; // Extract username
+            }
+            // Handle JWT tokens
+            else {
+                username = JwtUtil.validateToken(token); // Validate and extract username
+                if (username == null) {
+                    sendJsonResponse(out, 403, Map.of("error", "Invalid token"));
+                    return;
+                }
+            }
+
+            // Fetch user ID from database
+            UUID userId = userRepository.getUserIdByUsername(username);
+            if (userId == null) {
+                sendJsonResponse(out, 404, Map.of("error", "User not found"));
+                return;
+            }
+
+            // Retrieve deck from repository
+            List<Card> deck = deckRepository.getDeck(userId);
+
+            if (deck.isEmpty()) {
+                sendJsonResponse(out, 204, Map.of("message", "No cards found in deck"));
+            } else {
+                sendJsonResponse(out, 200, deck);
             }
         }
 
@@ -344,7 +386,7 @@ public class Router {
                 UUID tradeId = UUID.fromString(path.split("/")[2]); // Extract trade ID from path
                 UUID offeredCardId = UUID.fromString(parseBody(in, String.class)); // Offered card ID
 
-                int buyerId = userRepository.getUserIdByUsername(username); // Get buyer ID
+                UUID buyerId = userRepository.getUserIdByUsername(username); // Get buyer ID
                 boolean success = tradeService.executeTrade(tradeId, buyerId);
 
                 sendJsonResponse(out, success ? 201 : 400, Map.of("message", success ? "Trade executed successfully" : "Trade execution failed"));
