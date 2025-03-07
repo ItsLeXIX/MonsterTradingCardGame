@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import java.util.UUID;
 
 class UserControllerTest {
 
@@ -33,8 +34,10 @@ class UserControllerTest {
     @Test
     void testRegisterUserSuccess() {
         // Arrange
-        RegisterRequest request = new RegisterRequest("testUser", "password");
-        User user = new User(0, "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("existingUser");
+        request.setPassword("password");
+        User user = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
         when(userRepository.createUser(any(User.class))).thenReturn(true);
 
         // Act
@@ -48,8 +51,10 @@ class UserControllerTest {
     @Test
     void testRegisterUserDuplicate() {
         // Arrange
-        RegisterRequest request = new RegisterRequest("existingUser", "password");
-        User user = new User(2, "existingUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("existingUser");
+        request.setPassword("password");
+        User user = new User(UUID.randomUUID(), "existingUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
         when(userRepository.createUser(any(User.class))).thenReturn(false);
 
         // Act
@@ -66,7 +71,7 @@ class UserControllerTest {
         LoginRequest request = new LoginRequest();
         request.setUsername("testUser");
         request.setPassword("password");
-        User mockUser = new User(0, "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
+        User mockUser = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
         when(userRepository.getUserByUsername("testUser")).thenReturn(mockUser);
 
         // Act
@@ -83,7 +88,7 @@ class UserControllerTest {
         LoginRequest request = new LoginRequest();
         request.setUsername("testUser");
         request.setPassword("password");
-        User mockUser = new User(0, "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
+        User mockUser = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
         when(userRepository.getUserByUsername("testUser")).thenReturn(mockUser);
 
         // Act
