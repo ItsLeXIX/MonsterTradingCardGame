@@ -11,16 +11,16 @@ import java.util.UUID;
 public class DeckRepository {
 
     // Fetch cards in a user's deck
-    public List<Card> getDeckByUserId(int userId) {
+    public List<Card> getDeckByUserId(UUID userId) {
         List<Card> deck = new ArrayList<>();
         String query = "SELECT c.id, c.name, c.damage, c.type, c.element, c.status " +
-                "FROM decks d JOIN cards c ON d.card_id = c.id " +
+                "FROM deck d JOIN cards c ON d.card_id = c.id " +
                 "WHERE d.user_id = ?";
 
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            stmt.setInt(1, userId);
+            stmt.setObject(1, userId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {

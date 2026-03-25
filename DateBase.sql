@@ -57,11 +57,15 @@ CREATE TABLE deck (
     FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
 );
 
--- TRADES table
+-- TRADES table - Updated to match API spec
 CREATE TABLE trades (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     card_id UUID NOT NULL,
-    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    type VARCHAR(10) NOT NULL,          -- Required card type (monster or spell)
+    minimum_damage DOUBLE PRECISION NOT NULL,  -- Required minimum damage
+    owner_id UUID NOT NULL,              -- User who created the trade
+    FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- BATTLES table

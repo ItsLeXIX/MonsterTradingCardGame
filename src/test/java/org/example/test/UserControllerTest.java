@@ -1,100 +1,89 @@
 package org.example.test;
 
 import org.example.controllers.UserController;
-import org.example.dtos.RegisterRequest;
-import org.example.dtos.LoginRequest;
 import org.example.dtos.AuthResponse;
-import org.example.models.User;
+import org.example.dtos.LoginRequest;
+import org.example.dtos.RegisterRequest;
 import org.example.repositories.CardRepository;
-import org.example.services.UserService;
 import org.example.repositories.UserRepository;
+import org.example.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
-class UserControllerTest {
+public class UserControllerTest {
 
-    private UserController userController;
-    private UserService userService;
+    @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private CardRepository cardRepository;
+
+    @Mock
+    private UserService userService;
+
+    private UserController userController;
+
     @BeforeEach
-    void setUp() {
-        // Mock dependencies
-        userRepository = mock(UserRepository.class);
-        CardRepository cardRepository = mock(CardRepository.class); // Add this line
-        userService = new UserService(userRepository);
-        userController = new UserController(userService, userRepository, cardRepository); // Update here
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        userController = new UserController(userService, userRepository, cardRepository);
     }
 
-    // Test 1: Register a new user successfully
     @Test
     void testRegisterUserSuccess() {
-        // Arrange
         RegisterRequest request = new RegisterRequest();
-        request.setUsername("existingUser");
+        request.setUsername("newUser");
         request.setPassword("password");
-        User user = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
-        when(userRepository.createUser(any(User.class))).thenReturn(true);
 
-        // Act
+        when(userService.registerUser(anyString(), anyString())).thenReturn(true);
+
         AuthResponse response = userController.register(request);
 
-        // Assert
-        assertTrue(response.getMessage().contains("successfully"));
+        assertTrue(response.getMessage().contains("successfully"), "Registration should succeed");
     }
 
-    // Test 2: Register with duplicate username
     @Test
     void testRegisterUserDuplicate() {
-        // Arrange
         RegisterRequest request = new RegisterRequest();
         request.setUsername("existingUser");
         request.setPassword("password");
-        User user = new User(UUID.randomUUID(), "existingUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
-        when(userRepository.createUser(any(User.class))).thenReturn(false);
 
-        // Act
+        when(userService.registerUser(anyString(), anyString())).thenReturn(false);
+
         AuthResponse response = userController.register(request);
 
-        // Assert
-        assertFalse(response.getMessage().contains("successfully"));
+        assertTrue(response.getMessage().contains("already exists"), "Should detect duplicate username");
     }
 
-    // Test 3: Login with valid credentials
     @Test
     void testLoginUserSuccess() {
-        // Arrange
         LoginRequest request = new LoginRequest();
-        request.setUsername("testUser");
+        request.setUsername("newUser");
         request.setPassword("password");
-        User mockUser = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
-        when(userRepository.getUserByUsername("testUser")).thenReturn(mockUser);
 
-        // Act
+        when(userService.authenticateUser(anyString(), anyString())).thenReturn(true);
+
         AuthResponse response = userController.login(request);
 
-        // Assert
-        assertTrue(response.getMessage().contains("Token"));
+        assertTrue(response.getMessage().contains("Login successful"), "Login should succeed");
     }
 
-    // Test 4: Login with invalid credentials
     @Test
-    void testLoginUserInvalidCredentials() {
-        // Arrange
+    void testLoginUserFailure() {
         LoginRequest request = new LoginRequest();
-        request.setUsername("testUser");
-        request.setPassword("password");
-        User mockUser = new User(UUID.randomUUID(), "testUser", "password", "Test Name", "Bio", "image.png", 20, 1000, 0, 0);
-        when(userRepository.getUserByUsername("testUser")).thenReturn(mockUser);
+        request.setUsername("unknownUser");
+        request.setPassword("wrongPassword");
 
-        // Act
+        when(userService.authenticateUser(anyString(), anyString())).thenReturn(false);
+
         AuthResponse response = userController.login(request);
 
-        // Assert
-        assertFalse(response.getMessage().contains("Token"));
+        assertTrue(response.getMessage().contains("Invalid credentials"), "Login should fail");
     }
 }

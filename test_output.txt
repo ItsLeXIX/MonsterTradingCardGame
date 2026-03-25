@@ -1,0 +1,836 @@
+CURL Testing for Monster Trading Cards Game
+Syntax: MonsterTradingCards.sh [pause]
+- pause: optional, if set, then script will pause after each block
+.
+1) Create Users (Registration)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   103    0    59  100    44    964    719 --:--:-- --:--:-- --:--:--  1688
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"User registered successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   103    0    59  100    44   7294   5440 --:--:-- --:--:-- --:--:-- 12875
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"User registered successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   105    0    59  100    46   7407   5775 --:--:-- --:--:-- --:--:-- 15000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"User registered successfully.","success":true}
+Should return HTTP 201
+.
+should fail:
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    99    0    55  100    44   7251   5800 --:--:-- --:--:-- --:--:-- 14142
+HTTP/1.1 409 Conflict
+Content-Type: application/json
+
+{"message":"Username already exists.","success":false}
+Should return HTTP 4xx - User already exists
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   102    0    55  100    47  11588   9903 --:--:-- --:--:-- --:--:-- 25500
+HTTP/1.1 409 Conflict
+Content-Type: application/json
+
+{"message":"Username already exists.","success":false}
+Should return HTTP 4xx - User already exists
+.
+.
+2) Login Users
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   209    0   165  100    44   3663    976 --:--:-- --:--:-- --:--:--  4644
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJraWVuYm9lYyIsImlhdCI6MTc3NDQ0MDMxOSwiZXhwIjoxNzc0NTI2NzE5fQ.rnODtWt07CfaW2tzo2-Fx9JCp0VmNdxYtOFrYmxpVu4","success":true}
+should return HTTP 200 with generated token for the user, here: kienboec-mtcgToken
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   209    0   165  100    44  22366   5964 --:--:-- --:--:-- --:--:-- 29857
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHRlbmhvZiIsImlhdCI6MTc3NDQ0MDMxOSwiZXhwIjoxNzc0NTI2NzE5fQ.Wk2cl4qy7fVjqumxPuVK5pjsYQtkSFZxaM7LCR6Qgoc","success":true}
+should return HTTP 200 with generated token for the user, here: altenhof-mtcgToken
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   207    0   161  100    46  27734   7924 --:--:-- --:--:-- --:--:-- 41400
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc3NDQ0MDMxOSwiZXhwIjoxNzc0NTI2NzE5fQ.OifJ20auv0bRbV_zWBfJOA3bT0KCNrNcf6_VE5IKNjU","success":true}
+should return HTTP 200 with generated token for the user, here: admin-mtcgToken
+.
+should fail:
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    98    0    51  100    47  11373  10481 --:--:-- --:--:-- --:--:-- 24500
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+
+{"message":"Invalid credentials.","success":false}
+Should return HTTP 4xx - Login failed
+.
+.
+3) create packages (done by admin)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   1852  12935 --:--:-- --:--:-- --:--:-- 15193
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   2637  18419 --:--:-- --:--:-- --:--:-- 21409
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   3044  21256 --:--:-- --:--:-- --:--:-- 24789
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   2955  20639 --:--:-- --:--:-- --:--:-- 24789
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   2435  17009 --:--:-- --:--:-- --:--:-- 19625
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   2844  19861 --:--:-- --:--:-- --:--:-- 23550
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+.
+4) acquire packages kienboec
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5470      0 --:--:-- --:--:-- --:--:--  6000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   4166      0 --:--:-- --:--:-- --:--:--  4285
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5582      0 --:--:-- --:--:-- --:--:--  6000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5015      0 --:--:-- --:--:-- --:--:--  5454
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+should fail (no money):
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   100    0   100    0     0  26096      0 --:--:-- --:--:-- --:--:-- 33333
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"message":"Failed to acquire package. Not enough coins or no packages available.","success":false}
+Should return HTTP 4xx - Not enough money
+.
+.
+5) acquire packages altenhof
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5716      0 --:--:-- --:--:-- --:--:--  6000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5526      0 --:--:-- --:--:-- --:--:--  6000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+should fail (no package):
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   100    0   100    0     0  14238      0 --:--:-- --:--:-- --:--:-- 14285
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"message":"Failed to acquire package. Not enough coins or no packages available.","success":false}
+Should return HTTP 4xx - No packages available
+.
+.
+6) add new packages
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   477    0    59  100   418   3375  23917 --:--:-- --:--:-- --:--:-- 28058
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   471    0    59  100   412   3116  21762 --:--:-- --:--:-- --:--:-- 26166
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   469    0    59  100   410   2628  18269 --:--:-- --:--:-- --:--:-- 21318
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package created successfully.","success":true}
+Should return HTTP 201
+.
+.
+7) acquire newly created packages altenhof
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   5756      0 --:--:-- --:--:-- --:--:--  6000
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    60    0    60    0     0   4511      0 --:--:-- --:--:-- --:--:--  4615
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Package acquired successfully.","success":true}
+Should return HTTP 201
+.
+should fail (no money):
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   100    0   100    0     0  23775      0 --:--:-- --:--:-- --:--:-- 25000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"message":"Failed to acquire package. Not enough coins or no packages available.","success":false}
+Should return HTTP 4xx - Not enough money
+.
+.
+8) show all acquired cards kienboec
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  3990    0  3990    0     0   267k      0 --:--:-- --:--:-- --:--:--  278k
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"845f0dc7-37d0-426e-994e-43fc3ac83c08","name":"WaterGoblin","damage":10.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"99f8f8dc-e25e-4a95-aa2c-782823f36e2a","name":"Dragon","damage":50.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"e85e3976-7c86-4d06-9a80-641c2019a79f","name":"WaterSpell","damage":20.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","name":"Ork","damage":45.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"dfdd758f-649c-40f9-ba3a-8657f4b3439f","name":"FireSpell","damage":25.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"644808c2-f87a-4600-b313-122b02322fd5","name":"WaterGoblin","damage":9.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"4a2757d6-b1c3-47ac-b9a3-91deab093531","name":"Dragon","damage":55.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"91a6471b-1426-43f6-ad65-6fc473e16f9f","name":"WaterSpell","damage":21.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"4ec8b269-0dfa-4f97-809a-2c63fe2a0025","name":"Ork","damage":55.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"f8043c23-1534-4487-b66b-238e0c3c39b5","name":"WaterSpell","damage":23.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"b017ee50-1c14-44e2-bfd6-2c0c5653a37c","name":"WaterGoblin","damage":11.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"d04b736a-e874-4137-b191-638e0ff3b4e7","name":"Dragon","damage":70.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"88221cfe-1f84-41b9-8152-8e36c6a354de","name":"WaterSpell","damage":22.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"1d3f175b-c067-4359-989d-96562bfa382c","name":"Ork","damage":40.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"171f6076-4eb5-4a7d-b3f2-2d650cc3d237","name":"RegularSpell","damage":28.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"ed1dc1bc-f0aa-4a0c-8d43-1402189b33c8","name":"WaterGoblin","damage":10.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"65ff5f23-1e70-4b79-b3bd-f6eb679dd3b5","name":"Dragon","damage":50.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"55ef46c4-016c-4168-bc43-6b9b1e86414f","name":"WaterSpell","damage":20.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"f3fad0f2-a1af-45df-b80d-2e48825773d9","name":"Ork","damage":45.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"},{"id":"8c20639d-6400-4534-bd0f-ae563f11f57a","name":"WaterSpell","damage":25.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6"}]
+Should return HTTP 200 - and a list of all cards
+should fail (no token):
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    25    0    25    0     0  22241      0 --:--:-- --:--:-- --:--:-- 25000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Unauthorized"}
+Should return HTTP 4xx - Unauthorized
+.
+.
+9) show all acquired cards altenhof
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100  3995    0  3995    0     0   432k      0 --:--:-- --:--:-- --:--:--  433k
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"dcd93250-25a7-4dca-85da-cad2789f7198","name":"FireSpell","damage":23.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"d7d0cb94-2cbf-4f97-8ccf-9933dc5354b8","name":"WaterGoblin","damage":9.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"44c82fbc-ef6d-44ab-8c7a-9fb19a0e7c6e","name":"Dragon","damage":55.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"2c98cd06-518b-464c-b911-8d787216cddd","name":"WaterSpell","damage":21.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"951e886a-0fbf-425d-8df5-af2ee4830d85","name":"Ork","damage":55.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"b2237eca-0271-43bd-87f6-b22f70d42ca4","name":"WaterGoblin","damage":11.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"9e8238a4-8a7a-487f-9f7d-a8c97899eb48","name":"Dragon","damage":70.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"d60e23cf-2238-4d49-844f-c7589ee5342e","name":"WaterSpell","damage":22.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"fc305a7a-36f7-4d30-ad27-462ca0445649","name":"Ork","damage":40.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"84d276ee-21ec-4171-a509-c1b88162831c","name":"RegularSpell","damage":28.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"67f9048f-99b8-4ae4-b866-d8008d00c53d","name":"WaterGoblin","damage":10.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"aa9999a0-734c-49c6-8f4a-651864b14e62","name":"RegularSpell","damage":50.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"d6e9c720-9b5a-40c7-a6b2-bc34752e3463","name":"Knight","damage":20.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"02a9c76e-b17d-427f-9240-2dd49b0d3bfd","name":"RegularSpell","damage":45.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"2508bf5c-20d7-43b4-8c77-bc677decadef","name":"FireElf","damage":25.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"70962948-2bf7-44a9-9ded-8c68eeac7793","name":"WaterGoblin","damage":9.0,"element":"none","type":"water","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"74635fae-8ad3-4295-9139-320ab89c2844","name":"FireSpell","damage":55.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"ce6bcaee-47e1-4011-a49e-5a4d7d4245f3","name":"Knight","damage":21.0,"element":"none","type":"normal","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"a6fde738-c65a-4b10-b400-6fef0fdb28ba","name":"FireSpell","damage":55.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"},{"id":"a1618f1e-4f4c-4e09-9647-87e16f1edd2d","name":"FireElf","damage":23.0,"element":"none","type":"fire","status":"inventory","elementType":null,"ownerId":"e5ef068f-8d1f-46ea-b769-491141b934e5"}]
+Should return HTTP 200 - and a list of all cards
+.
+.
+10) show unconfigured deck
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 204 No Content
+Content-Type: application/json
+
+Should return HTTP 200 - and a empty-list
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 204 No Content
+Content-Type: application/json
+
+Should return HTTP 200 - and a empty-list
+.
+.
+11) configure deck
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   200    0    40  100   160   1805   7221 --:--:-- --:--:-- --:--:--  9090
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"Deck updated successfully"}
+Should return HTTP 2xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   651    0   651    0     0   111k      0 --:--:-- --:--:-- --:--:--  127k
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"845f0dc7-37d0-426e-994e-43fc3ac83c08","name":"WaterGoblin","damage":10.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"99f8f8dc-e25e-4a95-aa2c-782823f36e2a","name":"Dragon","damage":50.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"e85e3976-7c86-4d06-9a80-641c2019a79f","name":"WaterSpell","damage":20.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"171f6076-4eb5-4a7d-b3f2-2d650cc3d237","name":"RegularSpell","damage":28.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null}]
+Should return HTTP 200 - and a list of all cards
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   200    0    40  100   160   1784   7138 --:--:-- --:--:-- --:--:--  9090
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"Deck updated successfully"}
+Should return HTTP 2xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   653    0   653    0     0  77159      0 --:--:-- --:--:-- --:--:-- 81625
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"aa9999a0-734c-49c6-8f4a-651864b14e62","name":"RegularSpell","damage":50.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d6e9c720-9b5a-40c7-a6b2-bc34752e3463","name":"Knight","damage":20.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d60e23cf-2238-4d49-844f-c7589ee5342e","name":"WaterSpell","damage":22.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"02a9c76e-b17d-427f-9240-2dd49b0d3bfd","name":"RegularSpell","damage":45.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null}]
+Should return HTTP 200 - and a list of all cards
+.
+.
+should fail and show original from before:
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   221    0    61  100   160   5388  14134 --:--:-- --:--:-- --:--:-- 20090
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Card does not belong to user or is not available"}
+Should return HTTP 4xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   653    0   653    0     0   101k      0 --:--:-- --:--:-- --:--:--  106k
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"aa9999a0-734c-49c6-8f4a-651864b14e62","name":"RegularSpell","damage":50.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d6e9c720-9b5a-40c7-a6b2-bc34752e3463","name":"Knight","damage":20.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d60e23cf-2238-4d49-844f-c7589ee5342e","name":"WaterSpell","damage":22.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"02a9c76e-b17d-427f-9240-2dd49b0d3bfd","name":"RegularSpell","damage":45.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null}]
+Should return HTTP 200 - and a list of all cards
+.
+.
+should fail ... only 3 cards set
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   187    0    67  100   120   5679  10172 --:--:-- --:--:-- --:--:-- 17000
+HTTP/1.1 400 OK
+Content-Type: application/json
+
+{"error":"Invalid deck setup. Deck must contain exactly 4 cards."}
+Should return HTTP 4xx - Bad request
+.
+12) show configured deck
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   651    0   651    0     0  39702      0 --:--:-- --:--:-- --:--:-- 40687
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"845f0dc7-37d0-426e-994e-43fc3ac83c08","name":"WaterGoblin","damage":10.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"99f8f8dc-e25e-4a95-aa2c-782823f36e2a","name":"Dragon","damage":50.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"e85e3976-7c86-4d06-9a80-641c2019a79f","name":"WaterSpell","damage":20.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"171f6076-4eb5-4a7d-b3f2-2d650cc3d237","name":"RegularSpell","damage":28.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null}]
+Should return HTTP 200 - and a list of all cards
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   653    0   653    0     0  79673      0 --:--:-- --:--:-- --:--:-- 81625
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"id":"aa9999a0-734c-49c6-8f4a-651864b14e62","name":"RegularSpell","damage":50.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d6e9c720-9b5a-40c7-a6b2-bc34752e3463","name":"Knight","damage":20.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null},{"id":"d60e23cf-2238-4d49-844f-c7589ee5342e","name":"WaterSpell","damage":22.0,"element":"none","type":"water","status":"deck","elementType":null,"ownerId":null},{"id":"02a9c76e-b17d-427f-9240-2dd49b0d3bfd","name":"RegularSpell","damage":45.0,"element":"none","type":"normal","status":"deck","elementType":null,"ownerId":null}]
+Should return HTTP 200 - and a list of all cards
+.
+.
+./MonsterTradingCards.sh: line 241: REM: command not found
+13) show configured deck different representation
+kienboec
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   135    0   135    0     0  18024      0 --:--:-- --:--:-- --:--:-- 19285
+HTTP/1.1 200 OK
+Content-Type: text/plain
+
+Deck for kienboec:
+1. WaterGoblin (Damage: 10.0)
+2. Dragon (Damage: 50.0)
+3. WaterSpell (Damage: 20.0)
+4. RegularSpell (Damage: 28.0)
+
+Should return HTTP 200 - and a list of all cards
+.
+.
+altenhof
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   136    0   136    0     0  22731      0 --:--:-- --:--:-- --:--:-- 27200
+HTTP/1.1 200 OK
+Content-Type: text/plain
+
+Deck for altenhof:
+1. RegularSpell (Damage: 50.0)
+2. Knight (Damage: 20.0)
+3. WaterSpell (Damage: 22.0)
+4. RegularSpell (Damage: 45.0)
+
+Should return HTTP 200 - and a list of all cards
+.
+.
+14) edit user data
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    38    0    38    0     0   9090      0 --:--:-- --:--:-- --:--:--  9500
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Bio":null,"Image":null,"Name":null}
+Should return HTTP 200 - and current user data
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    38    0    38    0     0   9521      0 --:--:-- --:--:-- --:--:-- 12666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Bio":null,"Image":null,"Name":null}
+Should return HTTP 200 - and current user data
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   101    0    40  100    61   3918   5975 --:--:-- --:--:-- --:--:-- 10100
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"User successfully updated"}
+Should return HTTP 2xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   101    0    40  100    61   6508   9925 --:--:-- --:--:-- --:--:-- 16833
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"User successfully updated"}
+Should return HTTP 2xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    56    0    56    0     0  13937      0 --:--:-- --:--:-- --:--:-- 14000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Bio":"me playin...","Image":":-)","Name":"Kienboeck"}
+Should return HTTP 200 - and new user data
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    56    0    56    0     0  14889      0 --:--:-- --:--:-- --:--:-- 18666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Bio":"me codin...","Image":":-D","Name":"Altenhofer"}
+Should return HTTP 200 - and new user data
+.
+.
+should fail:
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    22    0    22    0     0  22066      0 --:--:-- --:--:-- --:--:-- 22000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Forbidden"}
+Should return HTTP 4xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    22    0    22    0     0  24017      0 --:--:-- --:--:-- --:--:-- 22000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Forbidden"}
+Should return HTTP 4xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    78    0    22  100    56  31609  80459 --:--:-- --:--:-- --:--:-- 78000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Forbidden"}
+Should return HTTP 4xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    77    0    22  100    55  21338  53346 --:--:-- --:--:-- --:--:-- 77000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Forbidden"}
+Should return HTTP 4xx
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    22    0    22    0     0  21934      0 --:--:-- --:--:-- --:--:-- 22000
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Forbidden"}
+Should return HTTP 4xx
+.
+.
+15) stats
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    51    0    51    0     0  13013      0 --:--:-- --:--:-- --:--:-- 17000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Losses":0,"Elo":100,"Wins":0,"Name":"Kienboeck"}
+Should return HTTP 200 - and user stats
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    52    0    52    0     0  14364      0 --:--:-- --:--:-- --:--:-- 17333
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Losses":0,"Elo":100,"Wins":0,"Name":"Altenhofer"}
+Should return HTTP 200 - and user stats
+.
+.
+16) scoreboard
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   152    0   152    0     0  27869      0 --:--:-- --:--:-- --:--:-- 30400
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"Losses":0,"Elo":100,"Wins":0,"Name":"admin"},{"Losses":0,"Elo":100,"Wins":0,"Name":"Kienboeck"},{"Losses":0,"Elo":100,"Wins":0,"Name":"Altenhofer"}]
+Should return HTTP 200 - and the scoreboard
+.
+.
+17) battle
+  % Total    %  %  RTeocteailv e d   %%  XRfeecreivedd %   XAfveeragerd  Av eSrpaegeed  Speed   Ti m e    Time    TTiimmee      T i m e  Current
+                   Time  Current 
+                                           Dlo    Dloada d  U Upload   Total   Sppelnota d      LTeotal   fStpent    L  Speed
+ef t 0       0   S p0eed
+     0     0  0     0        00        0      0 --:-- :-  0    0 -    0    --:--:-- --:--:- -    0       0   -0-:--:-- --:--:-- --:--:--     0100    55    0    55    0     0  38407      0 --:--:-- --:--:-- --:--:-- 55000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"Player altenhof is waiting for a battle."}
+100  2883    0  2883    0     0    98k      0 --:--:-- --:--:-- --:--:--  100k
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+Round 1:
+Player 1 (altenhof) plays RegularSpell with 45.0 damage.
+Player 2 (kienboec) plays WaterSpell with 20.0 damage.
+Round 2:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays WaterGoblin with 10.0 damage.
+Round 3:
+Player 1 (altenhof) plays RegularSpell with 45.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 4:
+Player 1 (altenhof) plays Knight with 20.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 5:
+Player 1 (altenhof) plays WaterSpell with 22.0 damage.
+Player 2 (kienboec) plays Knight with 20.0 damage.
+Round 6:
+Player 1 (altenhof) plays WaterSpell with 20.0 damage.
+Player 2 (kienboec) plays RegularSpell with 45.0 damage.
+Round 7:
+Player 1 (altenhof) plays WaterSpell with 22.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 8:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays RegularSpell with 28.0 damage.
+Round 9:
+Player 1 (altenhof) plays WaterGoblin with 10.0 damage.
+Player 2 (kienboec) plays RegularSpell with 45.0 damage.
+Round 10:
+Player 1 (altenhof) plays Knight with 20.0 damage.
+Player 2 (kienboec) plays WaterSpell with 20.0 damage.
+Round 11:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays WaterSpell with 22.0 damage.
+Round 12:
+Player 1 (altenhof) plays RegularSpell with 28.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 13:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays Knight with 20.0 damage.
+Round 14:
+Player 1 (altenhof) plays Knight with 20.0 damage.
+Player 2 (kienboec) plays RegularSpell with 45.0 damage.
+Round 15:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays RegularSpell with 28.0 damage.
+Round 16:
+Player 1 (altenhof) plays WaterSpell with 22.0 damage.
+Player 2 (kienboec) plays RegularSpell with 45.0 damage.
+Round 17:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays WaterSpell with 22.0 damage.
+Round 18:
+Player 1 (altenhof) plays RegularSpell with 28.0 damage.
+Player 2 (kienboec) plays Knight with 20.0 damage.
+Round 19:
+Player 1 (altenhof) plays WaterSpell with 22.0 damage.
+Player 2 (kienboec) plays WaterGoblin with 10.0 damage.
+Round 20:
+Player 1 (altenhof) plays RegularSpell with 28.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 21:
+Player 1 (altenhof) plays WaterSpell with 22.0 damage.
+Player 2 (kienboec) plays RegularSpell with 45.0 damage.
+Round 22:
+Player 1 (altenhof) plays RegularSpell with 50.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Round 23:
+Player 1 (altenhof) plays WaterGoblin with 10.0 damage.
+Player 2 (kienboec) plays WaterSpell with 20.0 damage.
+Round 24:
+Player 1 (altenhof) plays Knight with 20.0 damage.
+Player 2 (kienboec) plays Dragon with 50.0 damage.
+Player 2 wins the battle!
+18) Stats
+kienboec
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    51    0    51    0     0  14509      0 --:--:-- --:--:-- --:--:-- 17000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Losses":0,"Elo":110,"Wins":1,"Name":"Kienboeck"}
+Should return HTTP 200 - and changed user stats
+.
+altenhof
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    51    0    51    0     0   6866      0 --:--:-- --:--:-- --:--:--  7285
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"Losses":1,"Elo":95,"Wins":0,"Name":"Altenhofer"}
+Should return HTTP 200 - and changed user stats
+.
+.
+19) scoreboard
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   151    0   151    0     0  34832      0 --:--:-- --:--:-- --:--:-- 37750
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"Losses":0,"Elo":110,"Wins":1,"Name":"Kienboeck"},{"Losses":0,"Elo":100,"Wins":0,"Name":"admin"},{"Losses":1,"Elo":95,"Wins":0,"Name":"Altenhofer"}]
+Should return HTTP 200 - and the changed scoreboard
+.
+.
+20) trade
+check trading deals
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 204 No Content
+Content-Type: application/json
+
+Should return HTTP 200 - and an empty list
+.
+create trading deal
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   182    0    41  100   141   1665   5727 --:--:-- --:--:-- --:--:--  7583
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Trade created successfully"}
+Should return HTTP 201
+.
+check trading deals
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  42873      0 --:--:-- --:--:-- --:--:-- 47000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 - and the trading deal
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  55180      0 --:--:-- --:--:-- --:--:-- 62666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 - and the trading deal
+.
+delete trading deals
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    41    0    41    0     0   3426      0 --:--:-- --:--:-- --:--:--  3727
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{"message":"Trade deleted successfully"}
+Should return HTTP 2xx
+.
+.
+21) check trading deals
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+HTTP/1.1 204 No Content
+Content-Type: application/json
+
+Should return HTTP 200 ...
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   182    0    41  100   141   2575   8858 --:--:-- --:--:-- --:--:-- 12133
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"message":"Trade created successfully"}
+Should return HTTP 201
+check trading deals
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  60160      0 --:--:-- --:--:-- --:--:-- 62666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 ...
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  54194      0 --:--:-- --:--:-- --:--:-- 62666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 ...
+.
+try to trade with yourself (should fail)
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    77    0    39  100    38   4309   4199 --:--:-- --:--:-- --:--:--  8555
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Cannot trade with yourself"}
+Should return HTTP 4xx
+.
+try to trade
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100    96    0    58  100    38   5730   3754 --:--:-- --:--:-- --:--:--  9600
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+
+{"error":"Offered card type does not match requirements"}
+Should return HTTP 201 ...
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  44539      0 --:--:-- --:--:-- --:--:-- 47000
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 ...
+.
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   188    0   188    0     0  54476      0 --:--:-- --:--:-- --:--:-- 62666
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[{"ownerId":"46c4522a-97bf-44bf-9133-cea44d4ac6d6","Id":"6cd85277-4590-49d4-b0cf-ba0a921faad0","CardToTrade":"1cb6ab86-bdb2-47e5-b6e4-68c5ab389334","Type":"monster","MinimumDamage":15.0}]
+Should return HTTP 200 ...
+.
+end...

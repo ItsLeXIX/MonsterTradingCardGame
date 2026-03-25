@@ -1,0 +1,16 @@
+Connected to database: jdbc:postgresql://localhost:5432/mctg
+Database connection successful!
+Mar 25, 2026 1:23:05 PM org.example.core.HttpServer start
+INFO: Server started on port 10001
+Mar 25, 2026 1:23:15 PM org.example.core.HttpServer start
+INFO: Accepted new connection
+Mar 25, 2026 1:23:15 PM org.example.core.RequestHandler run
+INFO: Request: POST /users HTTP/1.1
+Raw request body: {"Username":"test", "Password":"test"}
+Connected to database: jdbc:postgresql://localhost:5432/mctg
+Mar 25, 2026 1:24:01 PM org.example.core.HttpServer start
+INFO: Accepted new connection
+Mar 25, 2026 1:24:01 PM org.example.core.RequestHandler run
+INFO: Request: POST /users HTTP/1.1
+Raw request body: {"Username":"check", "Password":"check"}
+Connected to database: jdbc:postgresql://localhost:5432/mctg

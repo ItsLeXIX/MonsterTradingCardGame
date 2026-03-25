@@ -14,6 +14,7 @@ public class CardRepository {
 
     private final UserRepository userRepository;
     private String inferElement(String name) {
+        if (name == null) return "normal";
         name = name.toLowerCase();
 
         if (name.contains("fire")) return "fire";
@@ -21,6 +22,15 @@ public class CardRepository {
         if (name.contains("regular")) return "normal";
 
         return "normal";  // Fallback to normal instead of none
+    }
+
+    private String inferType(String name) {
+        if (name == null) return "monster";
+        String lowerName = name.toLowerCase();
+        if (lowerName.contains("spell")) {
+            return "spell";
+        }
+        return "monster";
     }
 
     public CardRepository() {
@@ -35,19 +45,25 @@ public class CardRepository {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             String inferredElement = inferElement(card.getName());
+            // Infer type from name if not set
+            String cardType = card.getType();
+            if (cardType == null || cardType.isEmpty()) {
+                cardType = inferType(card.getName());
+                card.setType(cardType);
+            }
 
             // Debug: Print the values being inserted
             System.out.println("Inserting Card -> ID: " + card.getId() +
                     ", Name: " + card.getName() +
                     ", Damage: " + card.getDamage() +
-                    ", Type: " + card.getType() +
+                    ", Type: " + cardType +
                     ", Inferred Element: " + inferredElement +
                     ", Status: " + card.getStatus());
 
             stmt.setObject(1, card.getId());
             stmt.setString(2, card.getName());
             stmt.setDouble(3, card.getDamage());
-            stmt.setString(4, card.getType());
+            stmt.setString(4, cardType);
             stmt.setString(5, inferredElement);
             stmt.setString(6, card.getStatus());
 
@@ -74,10 +90,12 @@ public class CardRepository {
                         UUID.fromString(rs.getString("id")),
                         rs.getString("name"),
                         rs.getDouble("damage"),
-                        rs.getString("type"),
                         rs.getString("element"),
-                        rs.getString("status") // Retrieve status
+                        rs.getString("type"),
+                        rs.getString("status")
                 );
+                UUID ownerId = rs.getObject("owner_id", UUID.class);
+                card.setOwnerId(ownerId);
                 cards.add(card);
             }
         } catch (SQLException e) {
@@ -97,7 +115,7 @@ public class CardRepository {
         }
 
         // Query to get cards for the user
-        String query = "SELECT id, name, damage, type, element, status FROM cards WHERE owner_id = ?";
+        String query = "SELECT id, name, damage, type, element, status, owner_id FROM cards WHERE owner_id = ?";
         try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
@@ -105,14 +123,44 @@ public class CardRepository {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                cards.add(new Card(
+                Card card = new Card(
                         UUID.fromString(rs.getString("id")),
                         rs.getString("name"),
                         rs.getDouble("damage"),
                         rs.getString("type"),
                         rs.getString("element"),
                         rs.getString("status")
-                ));
+                );
+                card.setOwnerId(rs.getObject("owner_id", UUID.class));
+                cards.add(card);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cards;
+    }
+
+    // Get cards by user ID
+    public List<Card> getCardsByUserId(UUID userId) {
+        List<Card> cards = new ArrayList<>();
+        String query = "SELECT id, name, damage, type, element, status, owner_id FROM cards WHERE owner_id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setObject(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Card card = new Card(
+                        UUID.fromString(rs.getString("id")),
+                        rs.getString("name"),
+                        rs.getDouble("damage"),
+                        rs.getString("type"),
+                        rs.getString("element"),
+                        rs.getString("status")
+                );
+                card.setOwnerId(rs.getObject("owner_id", UUID.class));
+                cards.add(card);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -127,14 +175,33 @@ public class CardRepository {
             stmt.setObject(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return Optional.of(new Card(
+                Card card = new Card(
                         UUID.fromString(rs.getString("id")),
                         rs.getString("name"),
                         rs.getDouble("damage"),
-                        rs.getString("type")  // Assuming 'type' exists in DB
-                ));
+                        rs.getString("element"),
+                        rs.getString("type"),
+                        rs.getString("status")
+                );
+                card.setOwnerId(rs.getObject("owner_id", UUID.class));
+                return Optional.of(card);
             }
         }
         return Optional.empty();
+    }
+
+    // Update card status
+    public boolean updateCardStatus(UUID cardId, String status) {
+        String query = "UPDATE cards SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, status);
+            stmt.setObject(2, cardId);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

@@ -13,6 +13,7 @@ public class Card {
     private String type;
     private String status;
     private String elementType;
+    private UUID ownerId;
 
     // Primary Constructor
     @JsonCreator
@@ -23,15 +24,25 @@ public class Card {
             @JsonProperty("Element") String element,
             @JsonProperty("Type") String type,
             @JsonProperty("Status") String status
-//            @JsonProperty("elementType") String elementType
     ) {
         this.id = id;
         this.name = name;
         this.damage = damage;
         this.element = element;
-        this.type = type;
+        // Infer type from name if not provided
+        this.type = (type != null) ? type : inferTypeFromName(name);
         this.status = status;
         this.elementType = elementType;
+    }
+
+    // Helper method to infer card type from name
+    private String inferTypeFromName(String name) {
+        if (name == null) return "monster";
+        String lowerName = name.toLowerCase();
+        if (lowerName.contains("spell")) {
+            return "spell";
+        }
+        return "monster";
     }
 
     // Simplified Constructor for DB operations
@@ -44,6 +55,17 @@ public class Card {
         this.status = null;
     }
 
+    // Full Constructor with ownerId
+    public Card(UUID id, String name, double damage, String type, String element, String status, UUID ownerId) {
+        this.id = id;
+        this.name = name;
+        this.damage = damage;
+        this.type = type;
+        this.element = element;
+        this.status = status;
+        this.ownerId = ownerId;
+    }
+
     // Getters and Setters
     public UUID getId() { return id; }
     public String getName() { return name; }
@@ -52,6 +74,7 @@ public class Card {
     public String getType() { return type; }
     public String getStatus() { return (status == null) ? "available" : status; }
     public String getElementType() { return elementType; }
+    public UUID getOwnerId() { return ownerId; }
 
     public void setId(UUID id) { this.id = id; }
     public void setName(String name) { this.name = name; }
@@ -59,6 +82,7 @@ public class Card {
     public void setElement(String element) { this.element = element; }
     public void setType(String type) { this.type = type; }
     public void setStatus(String status) { this.status = status; }
+    public void setOwnerId(UUID ownerId) { this.ownerId = ownerId; }
 
     // Matching criteria for trading
     public boolean matchesCriteria(String requiredType, double minDamage) {
