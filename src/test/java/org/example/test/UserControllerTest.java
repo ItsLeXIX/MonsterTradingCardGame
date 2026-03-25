@@ -71,7 +71,9 @@ public class UserControllerTest {
 
         AuthResponse response = userController.login(request);
 
-        assertTrue(response.getMessage().contains("Login successful"), "Login should succeed");
+        // Login returns a JWT token on success, not "Login successful" message
+        assertTrue(response.getMessage().contains("-mtcgToken") || response.getMessage().split("\\.").length == 3,
+                "Login should return a JWT token");
     }
 
     @Test
